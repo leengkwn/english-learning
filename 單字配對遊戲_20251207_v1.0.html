@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400單字配對大挑戰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "微軟正黑體", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            max-height: 98vh;
+            overflow-y: auto;
+        }
+
+        /* 首頁 */
+        .home-screen {
+            text-align: center;
+            background: white;
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .difficulty-selector {
+            display: none;
+            margin-top: 25px;
+        }
+
+        .difficulty-selector.show {
+            display: block;
+        }
+
+        .difficulty-selector h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 130px;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .difficulty-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 45px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-btn:active {
+            transform: translateY(-2px);
+        }
+
+        .hint {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        /* 遊戲畫面 */
+        .game-screen {
+            display: none;
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .timer, .score {
+            font-size: 0.95em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .cards-grid {
+            display: grid;
+            gap: 6px;
+            margin-top: 8px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            user-select: none;
+            padding: 8px;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        .card.flipped {
+            background: white;
+            color: #333;
+            border: 3px solid #667eea;
+        }
+
+        .card.matched {
+            background: #4caf50;
+            color: white;
+            animation: matchPulse 0.5s ease;
+            cursor: default;
+        }
+
+        .card.wrong {
+            background: #f44336;
+            animation: wrongShake 0.5s ease;
+        }
+
+        @keyframes matchPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* 結果畫面 */
+        .result-screen {
+            display: none;
+            text-align: center;
+            background: white;
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .result-screen.active {
+            display: block;
+        }
+
+        .result-screen h2 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            font-size: 1.3em;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #667eea;
+            padding: 8px 20px;
+            font-size: 0.95em;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2em;
+            }
+            
+            .start-btn {
+                padding: 15px 35px;
+                font-size: 1.2em;
+            }
+
+            .cards-grid {
+                max-width: 600px;
+            }
+
+            .card {
+                font-size: 1.1em;
+            }
+
+            .game-screen {
+                padding: 8px;
+            }
+
+            .timer, .score {
+                font-size: 0.85em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.6em;
+            }
+
+            .cards-grid {
+                max-width: 450px;
+                gap: 5px;
+            }
+
+            .card {
+                font-size: 1em;
+                border-radius: 6px;
+                padding: 6px;
+            }
+
+            .game-header {
+                gap: 4px;
+            }
+
+            .game-screen {
+                padding: 6px;
+            }
+
+            .timer, .score {
+                font-size: 0.75em;
+            }
+
+            .btn-secondary {
+                padding: 5px 12px;
+                font-size: 0.75em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首頁 -->
+        <div id="homeScreen" class="home-screen">
+            <h1 class="title">
+                🎮 400單字配對大挑戰
+            </h1>
+            <p class="subtitle">
+                🎯 翻開卡片,配對英文和中文!<br>
+                訓練記憶力,學習更有趣!
+            </p>
+            
+            <button class="start-btn" id="startBtn">🚀 開始遊戲</button>
+
+            <!-- 難度選擇 -->
+            <div class="difficulty-selector" id="difficultySelector">
+                <h3>🎯 選擇難度</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn" data-size="4x4">
+                        😊 簡單<br>
+                        <span style="font-size: 0.7em;">(4x4 = 16張)</span>
+                    </button>
+                    <button class="difficulty-btn" data-size="4x6">
+                        🤔 中等<br>
+                        <span style="font-size: 0.7em;">(4x6 = 24張)</span>
+                    </button>
+                </div>
+            </div>
+
+            <p class="hint">💡 提示:翻開兩張牌,配對成功繼續挑戰!</p>
+        </div>
+
+        <!-- 遊戲畫面 -->
+        <div id="gameScreen" class="game-screen">
+            <div class="game-header">
+                <div class="timer" id="timer">⏱️ 0:00</div>
+                <div class="score" id="score">配對: 0/8</div>
+                <button class="btn btn-secondary" id="backBtn">🏠 返回</button>
+            </div>
+
+            <div class="cards-grid" id="cardsGrid"></div>
+        </div>
+
+        <!-- 結果畫面 -->
+        <div id="resultScreen" class="result-screen">
+            <h2>🎉 遊戲結束!</h2>
+            <div class="result-stats" id="resultStats"></div>
+            <div>
+                <button class="btn" id="playAgainBtn">🔄 再玩一次</button>
+                <button class="btn btn-secondary" id="homeBtn">🏠 回首頁</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 單字資料庫 (100個常用單字)
+        // ==========================================
+        
+        const VOCABULARY = [
+            { english: "I", chinese: "我" },
+            { english: "you", chinese: "你;你們" },
+            { english: "he", chinese: "他" },
+            { english: "she", chinese: "她" },
+            { english: "it", chinese: "它" },
+            { english: "we", chinese: "我們" },
+            { english: "they", chinese: "他們" },
+            { english: "am", chinese: "是" },
+            { english: "is", chinese: "是" },
+            { english: "are", chinese: "是" },
+            { english: "father", chinese: "爸爸" },
+            { english: "mother", chinese: "媽媽" },
+            { english: "brother", chinese: "兄弟" },
+            { english: "sister", chinese: "姊妹" },
+            { english: "family", chinese: "家庭" },
+            { english: "friend", chinese: "朋友" },
+            { english: "teacher", chinese: "老師" },
+            { english: "student", chinese: "學生" },
+            { english: "boy", chinese: "男孩" },
+            { english: "girl", chinese: "女孩" },
+            { english: "apple", chinese: "蘋果" },
+            { english: "banana", chinese: "香蕉" },
+            { english: "cat", chinese: "貓" },
+            { english: "dog", chinese: "狗" },
+            { english: "book", chinese: "書" },
+            { english: "pen", chinese: "筆" },
+            { english: "chair", chinese: "椅子" },
+            { english: "table", chinese: "桌子" },
+            { english: "water", chinese: "水" },
+            { english: "milk", chinese: "牛奶" },
+            { english: "happy", chinese: "快樂的" },
+            { english: "sad", chinese: "難過的" },
+            { english: "big", chinese: "大的" },
+            { english: "small", chinese: "小的" },
+            { english: "hot", chinese: "熱的" },
+            { english: "cold", chinese: "冷的" },
+            { english: "good", chinese: "好" },
+            { english: "bad", chinese: "壞" },
+            { english: "new", chinese: "新" },
+            { english: "old", chinese: "舊" },
+            { english: "run", chinese: "跑" },
+            { english: "walk", chinese: "走" },
+            { english: "jump", chinese: "跳" },
+            { english: "sit", chinese: "坐" },
+            { english: "stand", chinese: "站" },
+            { english: "sleep", chinese: "睡" },
+            { english: "eat", chinese: "吃" },
+            { english: "drink", chinese: "喝" },
+            { english: "Monday", chinese: "星期一" },
+            { english: "Tuesday", chinese: "星期二" },
+            { english: "Wednesday", chinese: "星期三" },
+            { english: "Thursday", chinese: "星期四" },
+            { english: "Friday", chinese: "星期五" },
+            { english: "Saturday", chinese: "星期六" },
+            { english: "Sunday", chinese: "星期日" },
+            { english: "one", chinese: "一" },
+            { english: "two", chinese: "二" },
+            { english: "three", chinese: "三" },
+            { english: "four", chinese: "四" },
+            { english: "five", chinese: "五" },
+            { english: "six", chinese: "六" },
+            { english: "seven", chinese: "七" },
+            { english: "eight", chinese: "八" },
+            { english: "nine", chinese: "九" },
+            { english: "ten", chinese: "十" },
+            { english: "red", chinese: "紅色" },
+            { english: "blue", chinese: "藍色" },
+            { english: "green", chinese: "綠色" },
+            { english: "yellow", chinese: "黃色" },
+            { english: "black", chinese: "黑色" },
+            { english: "white", chinese: "白色" },
+            { english: "home", chinese: "家" },
+            { english: "school", chinese: "學校" },
+            { english: "park", chinese: "公園" },
+            { english: "store", chinese: "商店" },
+            { english: "car", chinese: "汽車" },
+            { english: "bus", chinese: "公車" },
+            { english: "bike", chinese: "腳踏車" },
+            { english: "train", chinese: "火車" },
+            { english: "morning", chinese: "早上" },
+            { english: "afternoon", chinese: "下午" },
+            { english: "evening", chinese: "晚上" },
+            { english: "night", chinese: "夜晚" },
+            { english: "spring", chinese: "春天" },
+            { english: "summer", chinese: "夏天" },
+            { english: "autumn", chinese: "秋天" },
+            { english: "winter", chinese: "冬天" },
+            { english: "sun", chinese: "太陽" },
+            { english: "moon", chinese: "月亮" },
+            { english: "star", chinese: "星星" },
+            { english: "rain", chinese: "雨" },
+            { english: "snow", chinese: "雪" },
+            { english: "wind", chinese: "風" },
+            { english: "flower", chinese: "花" },
+            { english: "tree", chinese: "樹" },
+            { english: "grass", chinese: "草" },
+            { english: "river", chinese: "河" },
+            { english: "mountain", chinese: "山" },
+            { english: "sea", chinese: "海" }
+        ];
+
+        // ==========================================
+        // 遊戲狀態
+        // ==========================================
+        
+        let gridSize = null;
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let totalPairs = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let canFlip = true;
+
+        // ==========================================
+        // 語音系統
+        // ==========================================
+        
+        const Speech = {
+            synth: window.speechSynthesis,
+            voice: null,
+            
+            init() {
+                const voices = this.synth.getVoices();
+                this.voice = voices.find(v => v.lang === 'en-US') || voices[0];
+            },
+            
+            speak(text) {
+                if (!this.synth) return;
+                this.synth.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.voice = this.voice;
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                this.synth.speak(utterance);
+            }
+        };
+
+        // 初始化語音
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => Speech.init();
+        }
+        Speech.init();
+
+        // ==========================================
+        // 工具函數
+        // ==========================================
+        
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'success') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } else {
+                oscillator.frequency.value = 200;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            }
+        }
+
+        // ==========================================
+        // 首頁邏輯
+        // ==========================================
+        
+        document.getElementById('startBtn').addEventListener('click', () => {
+            document.getElementById('difficultySelector').classList.add('show');
+        });
+
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                gridSize = btn.dataset.size;
+                startGame();
+            });
+        });
+
+        // ==========================================
+        // 開始遊戲
+        // ==========================================
+        
+        function startGame() {
+            // 重置狀態
+            matchedPairs = 0;
+            flippedCards = [];
+            canFlip = true;
+            
+            // 計算需要的卡片數量
+            const [rows, cols] = gridSize.split('x').map(Number);
+            totalPairs = (rows * cols) / 2;
+            
+            // 隨機選擇單字
+            const selectedWords = shuffleArray([...VOCABULARY]).slice(0, totalPairs);
+            
+            // 創建卡片對
+            cards = [];
+            selectedWords.forEach((word, index) => {
+                cards.push({ 
+                    id: index * 2, 
+                    text: word.english, 
+                    type: 'english',
+                    pairId: index 
+                });
+                cards.push({ 
+                    id: index * 2 + 1, 
+                    text: word.chinese, 
+                    type: 'chinese',
+                    pairId: index 
+                });
+            });
+            
+            // 洗牌
+            cards = shuffleArray(cards);
+            
+            // 設定網格
+            const grid = document.getElementById('cardsGrid');
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            // 渲染卡片
+            grid.innerHTML = cards.map(card => `
+                <div class="card" data-id="${card.id}" data-pair="${card.pairId}" data-text="${card.text}" data-type="${card.type}">
+                    ?
+                </div>
+            `).join('');
+            
+            // 綁定點擊事件
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => flipCard(card));
+            });
+            
+            // 切換畫面
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('gameScreen').classList.add('active');
+            
+            // 啟動計時器
+            startTimer();
+            updateScore();
+        }
+
+        // ==========================================
+        // 翻牌邏輯
+        // ==========================================
+        
+        function flipCard(cardElement) {
+            if (!canFlip) return;
+            if (cardElement.classList.contains('flipped')) return;
+            if (cardElement.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+            
+            // 翻牌
+            cardElement.classList.add('flipped');
+            cardElement.textContent = cardElement.dataset.text;
+            
+            // 語音朗讀英文
+            if (cardElement.dataset.type === 'english') {
+                Speech.speak(cardElement.dataset.text);
+            }
+            
+            flippedCards.push(cardElement);
+            
+            // 檢查配對
+            if (flippedCards.length === 2) {
+                canFlip = false;
+                setTimeout(checkMatch, 800);
+            }
+        }
+
+        // ==========================================
+        // 檢查配對
+        // ==========================================
+        
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const pair1 = card1.dataset.pair;
+            const pair2 = card2.dataset.pair;
+            
+            if (pair1 === pair2) {
+                // 配對成功!
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                
+                playSound('success');
+                updateScore();
+                
+                // 檢查是否完成
+                if (matchedPairs === totalPairs) {
+                    setTimeout(endGame, 500);
+                }
+            } else {
+                // 配對失敗
+                card1.classList.add('wrong');
+                card2.classList.add('wrong');
+                
+                playSound('wrong');
+                
+                setTimeout(() => {
+                    card1.classList.remove('flipped', 'wrong');
+                    card2.classList.remove('flipped', 'wrong');
+                    card1.textContent = '?';
+                    card2.textContent = '?';
+                }, 1000);
+            }
+            
+            flippedCards = [];
+            setTimeout(() => { canFlip = true; }, 1000);
+        }
+
+        // ==========================================
+        // 計時器
+        // ==========================================
+        
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // ==========================================
+        // 更新分數
+        // ==========================================
+        
+        function updateScore() {
+            document.getElementById('score').textContent = `配對: ${matchedPairs}/${totalPairs}`;
+        }
+
+        // ==========================================
+        // 遊戲結束
+        // ==========================================
+        
+        function endGame() {
+            clearInterval(timerInterval);
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            const resultHTML = `
+                <div>⏱️ 完成時間: ${minutes}:${seconds.toString().padStart(2, '0')}</div>
+                <div>🎯 配對數: ${matchedPairs} 組</div>
+                <div>📊 難度: ${gridSize === '4x4' ? '簡單' : '中等'}</div>
+                <div style="margin-top: 30px; font-size: 2em;">
+                    ${elapsed < 60 ? '🏆 太厲害了!' : elapsed < 120 ? '👍 做得好!' : '💪 繼續努力!'}
+                </div>
+            `;
+            
+            document.getElementById('resultStats').innerHTML = resultHTML;
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        // ==========================================
+        // 返回首頁
+        // ==========================================
+        
+        function resetToHome() {
+            clearInterval(timerInterval);
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('homeScreen').style.display = 'block';
+            document.getElementById('difficultySelector').classList.remove('show');
+            gridSize = null;
+        }
+
+        document.getElementById('backBtn').addEventListener('click', resetToHome);
+        document.getElementById('homeBtn').addEventListener('click', resetToHome);
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            document.getElementById('resultScreen').classList.remove('active');
+            if (gridSize) {
+                startGame();
+            } else {
+                resetToHome();
+            }
+        });
+    </script>
+</body>
+</html>

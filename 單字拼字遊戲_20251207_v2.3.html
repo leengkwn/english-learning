@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧩 400單字拼圖王 (小學版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 標題 */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* 容器 */
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 單元選擇 */
+        .unit-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .unit-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .unit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .unit-card h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .unit-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        /* 遊戲區 */
+        .game-area {
+            display: none;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 中文提示區 */
+        .chinese-hint {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .chinese-hint-label {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .chinese-word {
+            font-size: 3em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 語音按鈕 */
+        .speaker-icon {
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .speaker-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .speaker-icon:active {
+            transform: scale(0.9);
+        }
+
+        /* 答案區 (拖放目標) */
+        .answer-area {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            min-height: 80px;
+            flex-wrap: wrap;
+        }
+
+        .letter-slot {
+            width: 60px;
+            height: 80px;
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            background: rgba(102, 126, 234, 0.1);
+            transition: all 0.3s;
+        }
+
+        .letter-slot.drag-over {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #4facfe;
+            transform: scale(1.1);
+        }
+
+        .letter-slot.filled {
+            border-style: solid;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .letter-slot.correct {
+            border-style: solid;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-color: #38ef7d;
+        }
+        
+        .letter-slot.wrong {
+            border-style: solid;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border-color: #ff6b6b;
+            animation: wrongShake 0.5s ease;
+        }
+        
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 字母池 (拖曳來源) */
+        .letter-pool {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            min-height: 100px;
+            padding: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+        }
+
+        .letter-tile {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            touch-action: manipulation;
+        }
+
+        .letter-tile:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .letter-tile:active {
+            transform: scale(0.95);
+        }
+
+        .letter-tile.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .letter-tile.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .letter-tile.selected {
+            animation: selectPulse 0.3s ease;
+        }
+        
+        @keyframes selectPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* 按鈕區 */
+        .button-area {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-hint {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #868f96 0%, #596164 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 提示顯示 */
+        .hint-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 235, 59, 0.3);
+            border-radius: 10px;
+            font-size: 1.2em;
+            min-height: 50px;
+            display: none;
+        }
+
+        .hint-display.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        /* 成績單 */
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .result-screen h2 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            font-size: 1.5em;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+
+        /* 回饋訊息 */
+        .feedback {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+
+        .feedback.correct {
+            color: #38ef7d;
+        }
+
+        .feedback.wrong {
+            color: #ff6b6b;
+        }
+
+        .feedback.show {
+            display: block;
+            animation: popIn 0.3s ease;
+        }
+
+        /* 動畫 */
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .chinese-word {
+                font-size: 2.5em;
+            }
+
+            .letter-slot, .letter-tile {
+                width: 50px;
+                height: 70px;
+                font-size: 1.5em;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 標題 -->
+    <div class="header">
+        <h1>🧩 400單字拼圖王 (小學版)</h1>
+        <div class="subtitle">Word Puzzle - 看中文,拼英文!</div>
+    </div>
+
+    <div class="container">
+        <!-- 單元選擇 -->
+        <div id="unitSelection" class="unit-selection">
+            <div class="unit-card" onclick="startGame(1)">
+                <h2>🎯 單元 1</h2>
+                <p>課 1-4</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(2)">
+                <h2>🎯 單元 2</h2>
+                <p>課 5-8</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(3)">
+                <h2>🎯 單元 3</h2>
+                <p>課 9-12</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(4)">
+                <h2>🎯 單元 4</h2>
+                <p>課 13-16</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(5)">
+                <h2>🎯 單元 5</h2>
+                <p>課 17-20</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(6)">
+                <h2>🎯 單元 6</h2>
+                <p>課 21-24</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(7)">
+                <h2>🎯 單元 7</h2>
+                <p>課 25-28</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(8)">
+                <h2>🎯 單元 8</h2>
+                <p>課 29-32</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(9)">
+                <h2>🎯 單元 9</h2>
+                <p>課 33-36</p>
+                <p>40個單字</p>
+            </div>
+            <div class="unit-card" onclick="startGame(10)">
+                <h2>🎯 單元 10</h2>
+                <p>課 37-40</p>
+                <p>40個單字</p>
+            </div>
+        </div>
+
+        <!-- 遊戲區 -->
+        <div id="gameArea" class="game-area">
+            <!-- 遊戲資訊 -->
+            <div class="game-info">
+                <span>📝 題數: <span id="questionNum">1</span>/10</span>
+                <span>✅ 答對: <span id="correctCount">0</span></span>
+                <span>💡 提示: <span id="hintCount">0</span></span>
+            </div>
+
+            <!-- 中文提示 -->
+            <div class="chinese-hint">
+                <div class="chinese-hint-label">請拼出這個單字:</div>
+                <div class="chinese-word" id="chineseWord">蘋果</div>
+                <div class="speaker-icon" onclick="speakWord()">🔊</div>
+            </div>
+
+            <!-- 提示顯示區 -->
+            <div id="hintDisplay" class="hint-display"></div>
+
+            <!-- 答案區 (拖放目標) -->
+            <div id="answerArea" class="answer-area"></div>
+
+            <!-- 字母池 (拖曳來源) -->
+            <div id="letterPool" class="letter-pool"></div>
+
+            <!-- 按鈕區 -->
+            <div class="button-area">
+                <button class="btn btn-check" onclick="checkAnswer()">✓ 檢查答案</button>
+                <button class="btn btn-hint" onclick="showHint()">💡 提示</button>
+                <button class="btn btn-reset" onclick="resetLetters()">🔄 重來</button>
+                <button class="btn btn-back" onclick="backToMenu()">🏠 返回</button>
+            </div>
+        </div>
+
+        <!-- 成績單 -->
+        <div id="resultScreen" class="result-screen">
+            <h2>🎉 遊戲結束!</h2>
+            <div class="result-stats">
+                <div class="stat-item">📝 總題數: 10 題</div>
+                <div class="stat-item">✅ 答對: <span id="finalCorrect">0</span> 題</div>
+                <div class="stat-item">💡 使用提示: <span id="finalHints">0</span> 次</div>
+                <div class="stat-item">📊 正確率: <span id="finalRate">0</span>%</div>
+                <div class="stat-item">🏆 總分: <span id="finalScore">0</span> 分</div>
+            </div>
+            <div class="button-area">
+                <button class="btn btn-check" onclick="restartGame()">🔄 再玩一次</button>
+                <button class="btn btn-back" onclick="backToMenu()">🏠 返回選單</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 回饋訊息 -->
+    <div id="feedback" class="feedback"></div>
+
+    <script>
+        // 遊戲資料庫 - 400個單字,分成10個單元
+        const vocabulary = {
+            1: [ // 單元1: 課1-4
+                {english: 'hello', chinese: '哈囉'},
+                {english: 'hi', chinese: '嗨'},
+                {english: 'good', chinese: '好的'},
+                {english: 'morning', chinese: '早上'},
+                {english: 'afternoon', chinese: '下午'},
+                {english: 'evening', chinese: '晚上'},
+                {english: 'night', chinese: '夜晚'},
+                {english: 'thank you', chinese: '謝謝'},
+                {english: 'you', chinese: '你'},
+                {english: 'welcome', chinese: '歡迎'},
+                {english: 'I', chinese: '我'},
+                {english: 'am', chinese: '是'},
+                {english: 'my', chinese: '我的'},
+                {english: 'name', chinese: '名字'},
+                {english: 'is', chinese: '是'},
+                {english: 'nice', chinese: '好的'},
+                {english: 'to', chinese: '去'},
+                {english: 'meet', chinese: '見面'},
+                {english: 'too', chinese: '也'},
+                {english: 'how', chinese: '如何'},
+                {english: 'are', chinese: '是'},
+                {english: 'fine', chinese: '好的'},
+                {english: 'and', chinese: '和'},
+                {english: 'yes', chinese: '是的'},
+                {english: 'no', chinese: '不'},
+                {english: 'OK', chinese: '好的'},
+                {english: 'bye', chinese: '再見'},
+                {english: 'see', chinese: '看見'},
+                {english: 'later', chinese: '稍後'},
+                {english: 'sorry', chinese: '抱歉'},
+                {english: 'excuse', chinese: '原諒'},
+                {english: 'me', chinese: '我'},
+                {english: 'please', chinese: '請'},
+                {english: 'here', chinese: '這裡'},
+                {english: 'this', chinese: '這個'},
+                {english: 'that', chinese: '那個'},
+                {english: 'what', chinese: '什麼'},
+                {english: 'it', chinese: '它'},
+                {english: 'the', chinese: '這個'},
+                {english: 'a', chinese: '一個'}
+            ],
+            2: [ // 單元2: 課5-8
+                {english: 'an', chinese: '一個'},
+                {english: 'book', chinese: '書'},
+                {english: 'pen', chinese: '筆'},
+                {english: 'pencil', chinese: '鉛筆'},
+                {english: 'eraser', chinese: '橡皮擦'},
+                {english: 'ruler', chinese: '尺'},
+                {english: 'bag', chinese: '袋子'},
+                {english: 'desk', chinese: '書桌'},
+                {english: 'chair', chinese: '椅子'},
+                {english: 'door', chinese: '門'},
+                {english: 'window', chinese: '窗戶'},
+                {english: 'board', chinese: '板子'},
+                {english: 'teacher', chinese: '老師'},
+                {english: 'student', chinese: '學生'},
+                {english: 'class', chinese: '班級'},
+                {english: 'school', chinese: '學校'},
+                {english: 'one', chinese: '一'},
+                {english: 'two', chinese: '二'},
+                {english: 'three', chinese: '三'},
+                {english: 'four', chinese: '四'},
+                {english: 'five', chinese: '五'},
+                {english: 'six', chinese: '六'},
+                {english: 'seven', chinese: '七'},
+                {english: 'eight', chinese: '八'},
+                {english: 'nine', chinese: '九'},
+                {english: 'ten', chinese: '十'},
+                {english: 'red', chinese: '紅色'},
+                {english: 'blue', chinese: '藍色'},
+                {english: 'green', chinese: '綠色'},
+                {english: 'yellow', chinese: '黃色'},
+                {english: 'black', chinese: '黑色'},
+                {english: 'white', chinese: '白色'},
+                {english: 'color', chinese: '顏色'},
+                {english: 'big', chinese: '大的'},
+                {english: 'small', chinese: '小的'},
+                {english: 'long', chinese: '長的'},
+                {english: 'short', chinese: '短的'},
+                {english: 'new', chinese: '新的'},
+                {english: 'old', chinese: '舊的'},
+                {english: 'cat', chinese: '貓'}
+            ],
+            3: [ // 單元3: 課9-12
+                {english: 'dog', chinese: '狗'},
+                {english: 'bird', chinese: '鳥'},
+                {english: 'fish', chinese: '魚'},
+                {english: 'he', chinese: '他'},
+                {english: 'she', chinese: '她'},
+                {english: 'they', chinese: '他們'},
+                {english: 'we', chinese: '我們'},
+                {english: 'boy', chinese: '男孩'},
+                {english: 'girl', chinese: '女孩'},
+                {english: 'man', chinese: '男人'},
+                {english: 'woman', chinese: '女人'},
+                {english: 'family', chinese: '家庭'},
+                {english: 'father', chinese: '父親'},
+                {english: 'mother', chinese: '母親'},
+                {english: 'brother', chinese: '兄弟'},
+                {english: 'sister', chinese: '姊妹'},
+                {english: 'happy', chinese: '快樂的'},
+                {english: 'sad', chinese: '悲傷的'},
+                {english: 'home', chinese: '家'},
+                {english: 'house', chinese: '房子'},
+                {english: 'room', chinese: '房間'},
+                {english: 'kitchen', chinese: '廚房'},
+                {english: 'bathroom', chinese: '浴室'},
+                {english: 'bedroom', chinese: '臥室'},
+                {english: 'living', chinese: '生活'},
+                {english: 'table', chinese: '桌子'},
+                {english: 'sofa', chinese: '沙發'},
+                {english: 'bed', chinese: '床'},
+                {english: 'TV', chinese: '電視'},
+                {english: 'phone', chinese: '電話'},
+                {english: 'computer', chinese: '電腦'},
+                {english: 'clock', chinese: '時鐘'},
+                {english: 'time', chinese: '時間'},
+                {english: 'day', chinese: '天'},
+                {english: 'week', chinese: '週'},
+                {english: 'month', chinese: '月'},
+                {english: 'year', chinese: '年'},
+                {english: 'today', chinese: '今天'},
+                {english: 'Monday', chinese: '星期一'},
+                {english: 'Tuesday', chinese: '星期二'}
+            ],
+            4: [ // 單元4: 課13-16
+                {english: 'Wednesday', chinese: '星期三'},
+                {english: 'Thursday', chinese: '星期四'},
+                {english: 'Friday', chinese: '星期五'},
+                {english: 'Saturday', chinese: '星期六'},
+                {english: 'Sunday', chinese: '星期日'},
+                {english: 'eat', chinese: '吃'},
+                {english: 'drink', chinese: '喝'},
+                {english: 'breakfast', chinese: '早餐'},
+                {english: 'lunch', chinese: '午餐'},
+                {english: 'dinner', chinese: '晚餐'},
+                {english: 'food', chinese: '食物'},
+                {english: 'rice', chinese: '米飯'},
+                {english: 'bread', chinese: '麵包'},
+                {english: 'egg', chinese: '蛋'},
+                {english: 'milk', chinese: '牛奶'},
+                {english: 'water', chinese: '水'},
+                {english: 'tea', chinese: '茶'},
+                {english: 'juice', chinese: '果汁'},
+                {english: 'apple', chinese: '蘋果'},
+                {english: 'banana', chinese: '香蕉'},
+                {english: 'orange', chinese: '橘子'},
+                {english: 'fruit', chinese: '水果'},
+                {english: 'like', chinese: '喜歡'},
+                {english: 'love', chinese: '愛'},
+                {english: 'want', chinese: '想要'},
+                {english: 'need', chinese: '需要'},
+                {english: 'have', chinese: '有'},
+                {english: 'get', chinese: '得到'},
+                {english: 'give', chinese: '給'},
+                {english: 'take', chinese: '拿'},
+                {english: 'make', chinese: '做'},
+                {english: 'do', chinese: '做'},
+                {english: 'go', chinese: '去'},
+                {english: 'come', chinese: '來'},
+                {english: 'walk', chinese: '走'},
+                {english: 'run', chinese: '跑'},
+                {english: 'jump', chinese: '跳'},
+                {english: 'sit', chinese: '坐'},
+                {english: 'stand', chinese: '站'},
+                {english: 'sleep', chinese: '睡覺'}
+            ],
+            5: [ // 單元5: 課17-20
+                {english: 'wake', chinese: '醒來'},
+                {english: 'wash', chinese: '洗'},
+                {english: 'brush', chinese: '刷'},
+                {english: 'wear', chinese: '穿'},
+                {english: 'clothes', chinese: '衣服'},
+                {english: 'shirt', chinese: '襯衫'},
+                {english: 'pants', chinese: '褲子'},
+                {english: 'shoes', chinese: '鞋子'},
+                {english: 'hat', chinese: '帽子'},
+                {english: 'coat', chinese: '外套'},
+                {english: 'hot', chinese: '熱的'},
+                {english: 'cold', chinese: '冷的'},
+                {english: 'warm', chinese: '溫暖的'},
+                {english: 'cool', chinese: '涼爽的'},
+                {english: 'weather', chinese: '天氣'},
+                {english: 'sunny', chinese: '晴朗的'},
+                {english: 'rainy', chinese: '下雨的'},
+                {english: 'cloudy', chinese: '多雲的'},
+                {english: 'windy', chinese: '有風的'},
+                {english: 'spring', chinese: '春天'},
+                {english: 'summer', chinese: '夏天'},
+                {english: 'fall', chinese: '秋天'},
+                {english: 'winter', chinese: '冬天'},
+                {english: 'beautiful', chinese: '美麗的'},
+                {english: 'pretty', chinese: '漂亮的'},
+                {english: 'tall', chinese: '高的'},
+                {english: 'short', chinese: '矮的'},
+                {english: 'fat', chinese: '胖的'},
+                {english: 'thin', chinese: '瘦的'},
+                {english: 'strong', chinese: '強壯的'},
+                {english: 'weak', chinese: '虛弱的'},
+                {english: 'fast', chinese: '快的'},
+                {english: 'slow', chinese: '慢的'},
+                {english: 'easy', chinese: '容易的'},
+                {english: 'hard', chinese: '困難的'},
+                {english: 'right', chinese: '對的'},
+                {english: 'wrong', chinese: '錯的'},
+                {english: 'good', chinese: '好的'},
+                {english: 'bad', chinese: '壞的'},
+                {english: 'friend', chinese: '朋友'}
+            ],
+            6: [ // 單元6: 課21-24
+                {english: 'people', chinese: '人們'},
+                {english: 'everyone', chinese: '每個人'},
+                {english: 'someone', chinese: '某人'},
+                {english: 'nobody', chinese: '沒有人'},
+                {english: 'help', chinese: '幫助'},
+                {english: 'thank', chinese: '感謝'},
+                {english: 'kind', chinese: '友善的'},
+                {english: 'smart', chinese: '聰明的'},
+                {english: 'funny', chinese: '有趣的'},
+                {english: 'play', chinese: '玩'},
+                {english: 'game', chinese: '遊戲'},
+                {english: 'ball', chinese: '球'},
+                {english: 'toy', chinese: '玩具'},
+                {english: 'music', chinese: '音樂'},
+                {english: 'sing', chinese: '唱歌'},
+                {english: 'dance', chinese: '跳舞'},
+                {english: 'movie', chinese: '電影'},
+                {english: 'watch', chinese: '觀看'},
+                {english: 'read', chinese: '閱讀'},
+                {english: 'write', chinese: '寫'},
+                {english: 'draw', chinese: '畫'},
+                {english: 'study', chinese: '學習'},
+                {english: 'learn', chinese: '學習'},
+                {english: 'know', chinese: '知道'},
+                {english: 'think', chinese: '想'},
+                {english: 'understand', chinese: '理解'},
+                {english: 'remember', chinese: '記得'},
+                {english: 'forget', chinese: '忘記'},
+                {english: 'talk', chinese: '說話'},
+                {english: 'speak', chinese: '講'},
+                {english: 'tell', chinese: '告訴'},
+                {english: 'ask', chinese: '問'},
+                {english: 'answer', chinese: '回答'},
+                {english: 'listen', chinese: '聽'},
+                {english: 'hear', chinese: '聽到'},
+                {english: 'look', chinese: '看'},
+                {english: 'see', chinese: '看見'},
+                {english: 'find', chinese: '找到'},
+                {english: 'lose', chinese: '失去'},
+                {english: 'open', chinese: '打開'}
+            ],
+            7: [ // 單元7: 課25-28
+                {english: 'close', chinese: '關閉'},
+                {english: 'start', chinese: '開始'},
+                {english: 'stop', chinese: '停止'},
+                {english: 'finish', chinese: '完成'},
+                {english: 'wait', chinese: '等待'},
+                {english: 'arrive', chinese: '到達'},
+                {english: 'leave', chinese: '離開'},
+                {english: 'stay', chinese: '停留'},
+                {english: 'travel', chinese: '旅行'},
+                {english: 'visit', chinese: '參觀'},
+                {english: 'country', chinese: '國家'},
+                {english: 'city', chinese: '城市'},
+                {english: 'street', chinese: '街道'},
+                {english: 'park', chinese: '公園'},
+                {english: 'store', chinese: '商店'},
+                {english: 'restaurant', chinese: '餐廳'},
+                {english: 'hospital', chinese: '醫院'},
+                {english: 'bank', chinese: '銀行'},
+                {english: 'post', chinese: '郵局'},
+                {english: 'office', chinese: '辦公室'},
+                {english: 'library', chinese: '圖書館'},
+                {english: 'museum', chinese: '博物館'},
+                {english: 'station', chinese: '車站'},
+                {english: 'airport', chinese: '機場'},
+                {english: 'bus', chinese: '公車'},
+                {english: 'train', chinese: '火車'},
+                {english: 'car', chinese: '汽車'},
+                {english: 'bike', chinese: '腳踏車'},
+                {english: 'plane', chinese: '飛機'},
+                {english: 'ship', chinese: '船'},
+                {english: 'drive', chinese: '開車'},
+                {english: 'ride', chinese: '騎'},
+                {english: 'fly', chinese: '飛'},
+                {english: 'turn', chinese: '轉'},
+                {english: 'left', chinese: '左邊'},
+                {english: 'right', chinese: '右邊'},
+                {english: 'up', chinese: '上'},
+                {english: 'down', chinese: '下'},
+                {english: 'front', chinese: '前面'},
+                {english: 'back', chinese: '後面'}
+            ],
+            8: [ // 單元8: 課29-32
+                {english: 'near', chinese: '附近'},
+                {english: 'far', chinese: '遠的'},
+                {english: 'next', chinese: '下一個'},
+                {english: 'between', chinese: '之間'},
+                {english: 'money', chinese: '錢'},
+                {english: 'buy', chinese: '買'},
+                {english: 'sell', chinese: '賣'},
+                {english: 'price', chinese: '價格'},
+                {english: 'cheap', chinese: '便宜的'},
+                {english: 'expensive', chinese: '昂貴的'},
+                {english: 'free', chinese: '免費的'},
+                {english: 'pay', chinese: '付錢'},
+                {english: 'cost', chinese: '花費'},
+                {english: 'save', chinese: '儲蓄'},
+                {english: 'spend', chinese: '花費'},
+                {english: 'rich', chinese: '富有的'},
+                {english: 'poor', chinese: '貧窮的'},
+                {english: 'job', chinese: '工作'},
+                {english: 'work', chinese: '工作'},
+                {english: 'worker', chinese: '工人'},
+                {english: 'doctor', chinese: '醫生'},
+                {english: 'nurse', chinese: '護士'},
+                {english: 'police', chinese: '警察'},
+                {english: 'cook', chinese: '廚師'},
+                {english: 'farmer', chinese: '農夫'},
+                {english: 'engineer', chinese: '工程師'},
+                {english: 'artist', chinese: '藝術家'},
+                {english: 'singer', chinese: '歌手'},
+                {english: 'actor', chinese: '演員'},
+                {english: 'writer', chinese: '作家'},
+                {english: 'busy', chinese: '忙碌的'},
+                {english: 'tired', chinese: '疲倦的'},
+                {english: 'sick', chinese: '生病的'},
+                {english: 'healthy', chinese: '健康的'},
+                {english: 'feel', chinese: '感覺'},
+                {english: 'hurt', chinese: '受傷'},
+                {english: 'pain', chinese: '疼痛'},
+                {english: 'medicine', chinese: '藥'},
+                {english: 'rest', chinese: '休息'},
+                {english: 'better', chinese: '更好的'}
+            ],
+            9: [ // 單元9: 課33-36
+                {english: 'worse', chinese: '更糟的'},
+                {english: 'care', chinese: '照顧'},
+                {english: 'check', chinese: '檢查'},
+                {english: 'body', chinese: '身體'},
+                {english: 'head', chinese: '頭'},
+                {english: 'face', chinese: '臉'},
+                {english: 'eye', chinese: '眼睛'},
+                {english: 'ear', chinese: '耳朵'},
+                {english: 'nose', chinese: '鼻子'},
+                {english: 'mouth', chinese: '嘴巴'},
+                {english: 'tooth', chinese: '牙齒'},
+                {english: 'hand', chinese: '手'},
+                {english: 'foot', chinese: '腳'},
+                {english: 'leg', chinese: '腿'},
+                {english: 'arm', chinese: '手臂'},
+                {english: 'finger', chinese: '手指'},
+                {english: 'hair', chinese: '頭髮'},
+                {english: 'exercise', chinese: '運動'},
+                {english: 'sport', chinese: '運動'},
+                {english: 'swim', chinese: '游泳'},
+                {english: 'basketball', chinese: '籃球'},
+                {english: 'baseball', chinese: '棒球'},
+                {english: 'soccer', chinese: '足球'},
+                {english: 'tennis', chinese: '網球'},
+                {english: 'player', chinese: '選手'},
+                {english: 'win', chinese: '贏'},
+                {english: 'lose', chinese: '輸'},
+                {english: 'team', chinese: '隊伍'},
+                {english: 'member', chinese: '成員'},
+                {english: 'hobby', chinese: '嗜好'},
+                {english: 'interest', chinese: '興趣'},
+                {english: 'enjoy', chinese: '享受'},
+                {english: 'fun', chinese: '有趣的'},
+                {english: 'boring', chinese: '無聊的'},
+                {english: 'exciting', chinese: '令人興奮的'},
+                {english: 'interesting', chinese: '有趣的'},
+                {english: 'important', chinese: '重要的'},
+                {english: 'special', chinese: '特別的'},
+                {english: 'different', chinese: '不同的'},
+                {english: 'same', chinese: '相同的'}
+            ],
+            10: [ // 單元10: 課37-40
+                {english: 'another', chinese: '另一個'},
+                {english: 'other', chinese: '其他的'},
+                {english: 'all', chinese: '全部'},
+                {english: 'some', chinese: '一些'},
+                {english: 'many', chinese: '許多'},
+                {english: 'much', chinese: '很多'},
+                {english: 'few', chinese: '少數'},
+                {english: 'little', chinese: '少許'},
+                {english: 'more', chinese: '更多'},
+                {english: 'less', chinese: '更少'},
+                {english: 'most', chinese: '最多'},
+                {english: 'enough', chinese: '足夠的'},
+                {english: 'very', chinese: '非常'},
+                {english: 'really', chinese: '真的'},
+                {english: 'quite', chinese: '相當'},
+                {english: 'too', chinese: '太'},
+                {english: 'so', chinese: '如此'},
+                {english: 'well', chinese: '好地'},
+                {english: 'better', chinese: '更好'},
+                {english: 'best', chinese: '最好'},
+                {english: 'always', chinese: '總是'},
+                {english: 'usually', chinese: '通常'},
+                {english: 'often', chinese: '經常'},
+                {english: 'sometimes', chinese: '有時'},
+                {english: 'never', chinese: '從不'},
+                {english: 'maybe', chinese: '也許'},
+                {english: 'sure', chinese: '確定'},
+                {english: 'of', chinese: '的'},
+                {english: 'course', chinese: '當然'},
+                {english: 'problem', chinese: '問題'},
+                {english: 'question', chinese: '問題'},
+                {english: 'idea', chinese: '主意'},
+                {english: 'plan', chinese: '計劃'},
+                {english: 'try', chinese: '嘗試'},
+                {english: 'use', chinese: '使用'},
+                {english: 'practice', chinese: '練習'},
+                {english: 'difficult', chinese: '困難的'},
+                {english: 'simple', chinese: '簡單的'},
+                {english: 'possible', chinese: '可能的'},
+                {english: 'impossible', chinese: '不可能的'}
+            ]
+        };
+
+        // 遊戲狀態
+        let currentUnit = 1;
+        let currentQuestion = 0;
+        let currentWord = null;
+        let correctAnswers = 0;
+        let hintUsed = 0;
+        let questions = [];
+        let userAnswer = [];
+
+        // 開始遊戲
+        function startGame(unit) {
+            currentUnit = unit;
+            currentQuestion = 0;
+            correctAnswers = 0;
+            hintUsed = 0;
+
+            // 隨機選10題
+            const unitWords = vocabulary[unit];
+            questions = [];
+            const usedIndices = new Set();
+
+            while (questions.length < 10) {
+                const randomIndex = Math.floor(Math.random() * unitWords.length);
+                if (!usedIndices.has(randomIndex)) {
+                    usedIndices.add(randomIndex);
+                    questions.push({...unitWords[randomIndex]});
+                }
+            }
+
+            // 切換畫面
+            document.getElementById('unitSelection').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('resultScreen').style.display = 'none';
+
+            loadQuestion();
+        }
+
+        // 載入題目
+        function loadQuestion() {
+            if (currentQuestion >= 10) {
+                showResult();
+                return;
+            }
+
+            currentWord = questions[currentQuestion];
+            userAnswer = [];
+
+            // 更新資訊
+            document.getElementById('questionNum').textContent = currentQuestion + 1;
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('hintCount').textContent = hintUsed;
+
+            // 顯示中文
+            document.getElementById('chineseWord').textContent = currentWord.chinese;
+
+            // 隱藏提示
+            document.getElementById('hintDisplay').classList.remove('show');
+
+            // 創建答案格子
+            createAnswerSlots();
+
+            // 創建字母池
+            createLetterPool();
+
+            // 自動朗讀
+            setTimeout(() => speakWord(), 500);
+        }
+
+        // 創建答案格子
+        function createAnswerSlots() {
+            const answerArea = document.getElementById('answerArea');
+            answerArea.innerHTML = '';
+
+            const letters = currentWord.english.split('');
+            letters.forEach((letter, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                slot.dataset.index = index;
+                slot.dataset.correctLetter = letter;
+                
+                // 如果是空格,顯示較小的間隔
+                if (letter === ' ') {
+                    slot.style.width = '30px';
+                    slot.style.border = 'none';
+                    slot.style.background = 'transparent';
+                    slot.classList.add('filled'); // 空格視為已填
+                    slot.textContent = ' ';
+                }
+
+                answerArea.appendChild(slot);
+            });
+        }
+
+        // 創建字母池
+        function createLetterPool() {
+            const letterPool = document.getElementById('letterPool');
+            letterPool.innerHTML = '';
+
+            // 將單字拆成字母並打亂(排除空格)
+            const letters = currentWord.english.split('').filter(l => l !== ' ');
+            const shuffled = shuffleArray([...letters]);
+
+            shuffled.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.textContent = letter;
+                tile.dataset.letter = letter;
+                tile.dataset.id = index;
+
+                // 點擊事件
+                tile.addEventListener('click', handleLetterClick);
+
+                letterPool.appendChild(tile);
+            });
+        }
+
+        // 處理字母點擊
+        function handleLetterClick(e) {
+            const tile = e.target;
+            const letter = tile.dataset.letter;
+            
+            // 找到第一個空的格子(跳過已填充和已正確的格子)
+            const slots = document.querySelectorAll('.letter-slot');
+            let placed = false;
+            
+            for (let slot of slots) {
+                // 跳過空格、已正確的格子、已填充的格子
+                if (slot.dataset.correctLetter === ' ') continue;
+                if (slot.classList.contains('correct')) continue;
+                if (slot.classList.contains('filled') && !slot.classList.contains('wrong')) continue;
+                
+                // 如果格子是空的,或者只是被標記為wrong(已被清空),則可以填入
+                if (!slot.textContent || slot.textContent === '') {
+                    // 放置字母
+                    const index = parseInt(slot.dataset.index);
+                    slot.textContent = letter;
+                    slot.classList.remove('wrong'); // 移除錯誤標記
+                    slot.classList.add('filled');
+                    slot.dataset.tileId = tile.dataset.id; // 記錄是哪個字母磚
+                    userAnswer[index] = letter;
+                    
+                    // 隱藏字母磚並添加動畫
+                    tile.classList.add('selected');
+                    setTimeout(() => {
+                        tile.classList.add('hidden');
+                    }, 300);
+                    
+                    placed = true;
+                    break;
+                }
+            }
+            
+            // 如果所有格子都填滿了,自動檢查答案
+            if (placed && checkIfAllFilled()) {
+                setTimeout(() => {
+                    checkAnswer();
+                }, 500);
+            }
+        }
+
+        // 檢查是否全部填滿
+        function checkIfAllFilled() {
+            const slots = document.querySelectorAll('.letter-slot');
+            for (let slot of slots) {
+                // 跳過空格
+                if (slot.dataset.correctLetter === ' ') continue;
+                // 跳過已經正確的格子
+                if (slot.classList.contains('correct')) continue;
+                // 檢查是否還有空格子
+                if (!slot.textContent || slot.textContent === '') {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // 打亂陣列
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 檢查答案
+        function checkAnswer() {
+            const correct = currentWord.english;
+            const slots = document.querySelectorAll('.letter-slot');
+            
+            let allCorrect = true;
+            let hasWrong = false;
+            
+            // 檢查每個字母
+            slots.forEach((slot, index) => {
+                const correctLetter = slot.dataset.correctLetter;
+                const userLetter = slot.textContent;
+                
+                // 跳過空格
+                if (correctLetter === ' ') return;
+                
+                if (userLetter === correctLetter) {
+                    // 正確的字母標記為綠色
+                    slot.classList.remove('filled', 'wrong');
+                    slot.classList.add('correct');
+                } else {
+                    // 錯誤的字母標記為紅色
+                    slot.classList.remove('filled', 'correct');
+                    slot.classList.add('wrong');
+                    allCorrect = false;
+                    hasWrong = true;
+                }
+            });
+
+            if (allCorrect) {
+                // 全部答對
+                correctAnswers++;
+                playSuccessSound();
+                showFeedback('✅ 太棒了!完全正確!', 'correct');
+                speakWord();
+
+                setTimeout(() => {
+                    currentQuestion++;
+                    loadQuestion();
+                }, 2000);
+            } else {
+                // 有錯誤
+                playErrorSound();
+                showFeedback('💡 紅色的字母是錯的,請重新選擇!', 'wrong');
+                
+                // 3.5秒後清空錯誤的字母 (延長2秒讓小學生看清楚)
+                setTimeout(() => {
+                    clearWrongLetters();
+                }, 3500);
+            }
+        }
+
+        // 清空錯誤的字母,保留正確的
+        function clearWrongLetters() {
+            const slots = document.querySelectorAll('.letter-slot');
+            const tiles = document.querySelectorAll('.letter-tile');
+            
+            slots.forEach((slot, index) => {
+                if (slot.classList.contains('wrong')) {
+                    const tileId = slot.dataset.tileId;
+                    
+                    // 清空格子
+                    slot.textContent = '';
+                    slot.classList.remove('wrong', 'filled');
+                    delete slot.dataset.tileId;
+                    userAnswer[index] = undefined;
+                    
+                    // 根據tileId恢復對應的字母磚
+                    if (tileId !== undefined) {
+                        tiles.forEach(tile => {
+                            if (tile.dataset.id === tileId) {
+                                tile.classList.remove('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // 顯示提示
+        function showHint() {
+            hintUsed++;
+            document.getElementById('hintCount').textContent = hintUsed;
+
+            const hintDisplay = document.getElementById('hintDisplay');
+            const word = currentWord.english;
+
+            // 提示1: 首字母
+            if (hintUsed % 3 === 1) {
+                hintDisplay.textContent = `💡 提示: 首字母是 "${word[0].toUpperCase()}"`;
+            }
+            // 提示2: 單字長度
+            else if (hintUsed % 3 === 2) {
+                const length = word.replace(/ /g, '').length;
+                hintDisplay.textContent = `💡 提示: 這個單字有 ${length} 個字母`;
+            }
+            // 提示3: 朗讀
+            else {
+                hintDisplay.textContent = `💡 提示: 仔細聽發音 🔊`;
+                speakWord();
+            }
+
+            hintDisplay.classList.add('show');
+        }
+
+        // 重置字母
+        function resetLetters() {
+            const slots = document.querySelectorAll('.letter-slot');
+            const tiles = document.querySelectorAll('.letter-tile');
+            
+            // 清空所有非正確的格子
+            slots.forEach((slot, index) => {
+                if (!slot.classList.contains('correct') && slot.dataset.correctLetter !== ' ') {
+                    slot.textContent = '';
+                    slot.classList.remove('filled', 'wrong');
+                    userAnswer[index] = undefined;
+                }
+            });
+
+            // 顯示所有字母
+            tiles.forEach(tile => tile.classList.remove('hidden'));
+        }
+
+        // 語音朗讀
+        function speakWord() {
+            if ('speechSynthesis' in window && currentWord) {
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(currentWord.english);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 音效系統
+        function playSuccessSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 523.25;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playErrorSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 200;
+            oscillator.type = 'sawtooth';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // 顯示回饋
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type} show`;
+
+            // 錯誤訊息顯示3秒,答對訊息顯示1.5秒
+            const duration = type === 'wrong' ? 3000 : 1500;
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, duration);
+        }
+
+        // 顯示成績
+        function showResult() {
+            const rate = Math.round((correctAnswers / 10) * 100);
+            const score = correctAnswers * 10;
+
+            document.getElementById('finalCorrect').textContent = correctAnswers;
+            document.getElementById('finalHints').textContent = hintUsed;
+            document.getElementById('finalRate').textContent = rate;
+            document.getElementById('finalScore').textContent = score;
+
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+        }
+
+        // 重新開始
+        function restartGame() {
+            startGame(currentUnit);
+        }
+
+        // 返回選單
+        function backToMenu() {
+            document.getElementById('unitSelection').style.display = 'grid';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

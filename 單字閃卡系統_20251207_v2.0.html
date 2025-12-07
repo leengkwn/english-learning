@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>400單字閃卡學習系統 - 國小完整版 | Lesson 1-40</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: #666;
+        }
+
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .lesson-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .lesson-card:active {
+            transform: scale(0.98);
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .lesson-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .lesson-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .lesson-card .word-count {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .flashcard-container {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .flashcard-container.active {
+            display: block;
+        }
+
+        .word-counter {
+            text-align: center;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .flashcard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            min-height: 400px;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            width: 100%;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .flashcard-front {
+            opacity: 1;
+        }
+
+        .flashcard-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flashcard.flipped .flashcard-front {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flashcard.flipped .flashcard-back {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .word-english {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .image-container {
+            font-size: 8em;
+            margin-bottom: 20px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .word-phonetic {
+            font-size: 1.5em;
+            opacity: 0.9;
+        }
+
+        .word-chinese {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .word-example {
+            font-size: 1.3em;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 120px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .speaker-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .speaker-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .speaker-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .word-english {
+                font-size: 2em;
+            }
+
+            .word-chinese {
+                font-size: 1.8em;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9em;
+                min-width: 100px;
+            }
+        }
+    
+        .quiz-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .quiz-container.active {
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.5em;
+            color: #2d3748;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-option {
+            padding: 20px;
+            background: #edf2f7;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+        }
+
+        .quiz-option:hover {
+            background: #e2e8f0;
+            border-color: #667eea;
+        }
+
+        .quiz-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .quiz-option.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .quiz-option.wrong {
+            background: #f56565;
+            color: white;
+            border-color: #f56565;
+        }
+
+        .quiz-result {
+            text-align: center;
+            padding: 40px;
+            background: #f7fafc;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .quiz-result h3 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .quiz-result p {
+            font-size: 1.3em;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+    
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(72,187,120,0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 4px 20px rgba(72,187,120,0.6); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主標題 -->
+        <div class="header">
+            <h1>🎯 國小400單字閃卡學習系統</h1>
+            <p>Lesson 1-40 共40課 | 完整學習包含發音與測驗</p>
+            <!-- 進度條 -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;">0%</div>
+            </div>
+
+            <!-- 統計資訊 -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="totalLessons">40</h3>
+                    <p>總課程數</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalWords">400</h3>
+                    <p>總單字數</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="completedLessons">0</h3>
+                    <p>已完成</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 課程選單 -->
+        <div id="lessonsView">
+            <div class="lessons-grid" id="lessonsGrid"></div>
+        </div>
+
+        <!-- 閃卡學習區 -->
+        <div class="flashcard-container" id="flashcardContainer">
+            <div class="word-counter" id="wordCounter"></div>
+            <div class="flashcard" id="flashcard" data-action="flip-card">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="image-container" id="imageContainer"></div>
+                        <div class="word-english" id="wordEnglish"></div>
+                        <div class="word-phonetic" id="wordPhonetic"></div>
+                        <button class="speaker-btn" data-action="speak-word">🔊 發音</button>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="word-chinese" id="wordChinese"></div>
+                        <div class="word-example" id="wordExample"></div>
+                        <button class="speaker-btn" data-action="speak-example" style="margin-top: 20px;">🔊 聽例句</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" data-action="previous-word">⬅️ 上一個</button>
+                <button class="btn btn-primary" data-action="speak-word-again">🔊 再聽單字</button>
+                <button class="btn btn-primary" data-action="next-word">下一個 ➡️</button>
+                <button class="btn btn-success" onclick="startQuiz()">🎯 開始小測驗</button>
+                <button class="btn btn-secondary" data-action="back-to-menu">📚 返回選單</button>
+            </div>
+        </div>
+
+        <!-- 測驗容器 -->
+        <div class="quiz-container" id="quizContainer">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 30px;">課後小測驗</h2>
+            <div class="word-counter" id="quizCounter"></div>
+            <div class="quiz-question" id="quizQuestion"></div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="controls">
+                <button class="btn btn-primary" id="checkAnswerBtn" onclick="checkAnswer()">確認答案</button>
+                <button class="btn btn-secondary" id="nextQuestionBtn" onclick="nextQuestion()" style="display: none;">下一題</button>
+            </div>
+            <div class="quiz-result" id="quizResult" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // === StorageManager + EventSystem 模組 ===
+        const StorageManager = {
+            prefix: 'flashcard400_',
+            save(k, v) { try { localStorage.setItem(this.prefix+k, JSON.stringify(v)); return true; } catch(e) { return false; }},
+            load(k, d=null) { try { const x=localStorage.getItem(this.prefix+k); return x?JSON.parse(x):d; } catch(e) { return d; }},
+            exportAll() {
+                const d = {};
+                Object.keys(localStorage).forEach(k => {
+                    if(k.startsWith(this.prefix)) d[k.replace(this.prefix,'')]=JSON.parse(localStorage.getItem(k));
+                });
+                const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+                const u=URL.createObjectURL(b); const a=document.createElement('a');
+                a.href=u; a.download='400單字進度_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+            }
+        };
+        const EventSystem = { addEvent(el,h) { if(!el||el.dataset.eventBound)return; el.addEventListener('touchend',h,{passive:false}); el.addEventListener('click',h); el.dataset.eventBound='true'; }};
+
+
+        // ==========================================
+        // 資料結構 - 40課400單字 (每課10個字)
+        // ==========================================
+        
+        const LESSONS_DATA = {
+            "1": [
+                { "english": "I", "chinese": "我", "phonetic": "/aɪ/", "example": "I am happy." },
+                { "english": "you", "chinese": "你;你們", "phonetic": "/juː/", "example": "You are my friend." },
+                { "english": "he", "chinese": "他", "phonetic": "/hiː/", "example": "He is tall." },
+                { "english": "she", "chinese": "她", "phonetic": "/ʃiː/", "example": "She is kind." },
+                { "english": "it", "chinese": "它", "phonetic": "/ɪt/", "example": "It is big." },
+                { "english": "we", "chinese": "我們", "phonetic": "/wiː/", "example": "We are students." },
+                { "english": "they", "chinese": "他們;她們;它們", "phonetic": "/ðeɪ/", "example": "They are happy." },
+                { "english": "am", "chinese": "是(用於I)", "phonetic": "/æm/", "example": "I am a student." },
+                { "english": "is", "chinese": "是(用於he/she/it)", "phonetic": "/ɪz/", "example": "He is tall." },
+                { "english": "are", "chinese": "是(用於you/we/they)", "phonetic": "/ɑːr/", "example": "We are friends." }
+            ],
+            "2": [
+                { "english": "father", "chinese": "爸爸", "phonetic": "/ˈfɑːðər/", "example": "My father is kind.", "image": "👨" },
+                { "english": "mother", "chinese": "媽媽", "phonetic": "/ˈmʌðər/", "example": "My mother cooks well.", "image": "👩" },
+                { "english": "brother", "chinese": "兄弟", "phonetic": "/ˈbrʌðər/", "example": "My brother is tall.", "image": "👦" },
+                { "english": "sister", "chinese": "姊妹", "phonetic": "/ˈsɪstər/", "example": "My sister is smart.", "image": "👧" },
+                { "english": "family", "chinese": "家庭", "phonetic": "/ˈfæməli/", "example": "I love my family.", "image": "👨‍👩‍👧‍👦" },
+                { "english": "friend", "chinese": "朋友", "phonetic": "/frend/", "example": "He is my friend.", "image": "👫" },
+                { "english": "teacher", "chinese": "老師", "phonetic": "/ˈtiːtʃər/", "example": "My teacher is nice.", "image": "👨‍🏫" },
+                { "english": "student", "chinese": "學生", "phonetic": "/ˈstuːdənt/", "example": "I am a student.", "image": "🎓" },
+                { "english": "boy", "chinese": "男孩", "phonetic": "/bɔɪ/", "example": "The boy is happy.", "image": "👦" },
+                { "english": "girl", "chinese": "女孩", "phonetic": "/ɡɜːrl/", "example": "The girl is pretty.", "image": "👧" }
+            ],
+            "3": [
+                { "english": "cat", "chinese": "貓", "phonetic": "/kæt/", "example": "I have a cat.", "image": "🐱" },
+                { "english": "dog", "chinese": "狗", "phonetic": "/dɔɡ/", "example": "My dog is cute.", "image": "🐶" },
+                { "english": "bird", "chinese": "鳥", "phonetic": "/bɜːrd/", "example": "The bird can fly.", "image": "🐦" },
+                { "english": "fish", "chinese": "魚", "phonetic": "/fɪʃ/", "example": "Fish live in water.", "image": "🐟" },
+                { "english": "pig", "chinese": "豬", "phonetic": "/pɪɡ/", "example": "The pig is pink.", "image": "🐷" },
+                { "english": "cow", "chinese": "牛", "phonetic": "/kaʊ/", "example": "The cow gives milk.", "image": "🐮" },
+                { "english": "horse", "chinese": "馬", "phonetic": "/hɔːrs/", "example": "The horse runs fast.", "image": "🐴" },
+                { "english": "chicken", "chinese": "雞", "phonetic": "/ˈtʃɪkɪn/", "example": "The chicken lays eggs.", "image": "🐔" },
+                { "english": "duck", "chinese": "鴨子", "phonetic": "/dʌk/", "example": "The duck swims well.", "image": "🦆" },
+                { "english": "rabbit", "chinese": "兔子", "phonetic": "/ˈræbɪt/", "example": "The rabbit is white.", "image": "🐰" }
+            ],
+            "4": [
+                { "english": "red", "chinese": "紅色的", "phonetic": "/red/", "example": "I like red apples.", "image": "🔴" },
+                { "english": "blue", "chinese": "藍色的", "phonetic": "/bluː/", "example": "The sky is blue.", "image": "🔵" },
+                { "english": "green", "chinese": "綠色的", "phonetic": "/ɡriːn/", "example": "Grass is green.", "image": "🟢" },
+                { "english": "yellow", "chinese": "黃色的", "phonetic": "/ˈjeloʊ/", "example": "The sun is yellow.", "image": "🟡" },
+                { "english": "white", "chinese": "白色的", "phonetic": "/waɪt/", "example": "Snow is white.", "image": "⚪" },
+                { "english": "black", "chinese": "黑色的", "phonetic": "/blæk/", "example": "My cat is black.", "image": "⚫" },
+                { "english": "pink", "chinese": "粉紅色的", "phonetic": "/pɪŋk/", "example": "I have a pink bag.", "image": "🌸" },
+                { "english": "brown", "chinese": "棕色的", "phonetic": "/braʊn/", "example": "The dog is brown.", "image": "🟤" },
+                { "english": "orange", "chinese": "橘色的", "phonetic": "/ˈɔːrɪndʒ/", "example": "I eat an orange.", "image": "🟠" },
+                { "english": "purple", "chinese": "紫色的", "phonetic": "/ˈpɜːrpl/", "example": "She likes purple.", "image": "🟣" }
+            ],
+            "5": [
+                { "english": "one", "chinese": "一", "phonetic": "/wʌn/", "example": "I have one book.", "image": "1️⃣" },
+                { "english": "two", "chinese": "二", "phonetic": "/tuː/", "example": "I have two cats.", "image": "2️⃣" },
+                { "english": "three", "chinese": "三", "phonetic": "/θriː/", "example": "I see three birds.", "image": "3️⃣" },
+                { "english": "four", "chinese": "四", "phonetic": "/fɔːr/", "example": "There are four chairs.", "image": "4️⃣" },
+                { "english": "five", "chinese": "五", "phonetic": "/faɪv/", "example": "I have five pencils.", "image": "5️⃣" },
+                { "english": "six", "chinese": "六", "phonetic": "/sɪks/", "example": "I am six years old.", "image": "6️⃣" },
+                { "english": "seven", "chinese": "七", "phonetic": "/ˈsevn/", "example": "There are seven days.", "image": "7️⃣" },
+                { "english": "eight", "chinese": "八", "phonetic": "/eɪt/", "example": "I wake up at eight.", "image": "8️⃣" },
+                { "english": "nine", "chinese": "九", "phonetic": "/naɪn/", "example": "I go to bed at nine.", "image": "9️⃣" },
+                { "english": "ten", "chinese": "十", "phonetic": "/ten/", "example": "I have ten fingers.", "image": "🔟" }
+            ],
+            "6": [
+                { "english": "apple", "chinese": "蘋果", "phonetic": "/ˈæpl/", "example": "I eat an apple.", "image": "🍎" },
+                { "english": "banana", "chinese": "香蕉", "phonetic": "/bəˈnænə/", "example": "Bananas are yellow.", "image": "🍌" },
+                { "english": "orange", "chinese": "橘子", "phonetic": "/ˈɔːrɪndʒ/", "example": "I like oranges.", "image": "🍊" },
+                { "english": "grape", "chinese": "葡萄", "phonetic": "/ɡreɪp/", "example": "Grapes are sweet.", "image": "🍇" },
+                { "english": "watermelon", "chinese": "西瓜", "phonetic": "/ˈwɔːtərmelən/", "example": "Watermelon is big.", "image": "🍉" },
+                { "english": "strawberry", "chinese": "草莓", "phonetic": "/ˈstrɔːberi/", "example": "I love strawberries.", "image": "🍓" },
+                { "english": "pear", "chinese": "梨子", "phonetic": "/per/", "example": "The pear is sweet.", "image": "🍐" },
+                { "english": "peach", "chinese": "桃子", "phonetic": "/piːtʃ/", "example": "Peaches are soft.", "image": "🍑" },
+                { "english": "lemon", "chinese": "檸檬", "phonetic": "/ˈlemən/", "example": "Lemons are sour.", "image": "🍋" },
+                { "english": "mango", "chinese": "芒果", "phonetic": "/ˈmæŋɡoʊ/", "example": "Mangoes are delicious.", "image": "🥭" }
+            ],
+            "7": [
+                { "english": "rice", "chinese": "米飯", "phonetic": "/raɪs/", "example": "I eat rice every day.", "image": "🍚" },
+                { "english": "bread", "chinese": "麵包", "phonetic": "/bred/", "example": "I have bread for breakfast.", "image": "🍞" },
+                { "english": "egg", "chinese": "蛋", "phonetic": "/eɡ/", "example": "I eat an egg.", "image": "🥚" },
+                { "english": "milk", "chinese": "牛奶", "phonetic": "/mɪlk/", "example": "I drink milk.", "image": "🥛" },
+                { "english": "water", "chinese": "水", "phonetic": "/ˈwɔːtər/", "example": "I need water.", "image": "💧" },
+                { "english": "juice", "chinese": "果汁", "phonetic": "/dʒuːs/", "example": "I like orange juice.", "image": "🧃" },
+                { "english": "tea", "chinese": "茶", "phonetic": "/tiː/", "example": "My mom drinks tea.", "image": "🍵" },
+                { "english": "coffee", "chinese": "咖啡", "phonetic": "/ˈkɔːfi/", "example": "Dad drinks coffee.", "image": "☕" },
+                { "english": "cake", "chinese": "蛋糕", "phonetic": "/keɪk/", "example": "I have a birthday cake.", "image": "🎂" },
+                { "english": "candy", "chinese": "糖果", "phonetic": "/ˈkændi/", "example": "I like candy.", "image": "🍬" }
+            ],
+            "8": [
+                { "english": "head", "chinese": "頭", "phonetic": "/hed/", "example": "I have a big head.", "image": "🗣️" },
+                { "english": "face", "chinese": "臉", "phonetic": "/feɪs/", "example": "Wash your face.", "image": "👧" },
+                { "english": "eye", "chinese": "眼睛", "phonetic": "/aɪ/", "example": "I have two eyes.", "image": "👁️" },
+                { "english": "ear", "chinese": "耳朵", "phonetic": "/ɪr/", "example": "I can hear with my ears.", "image": "👂" },
+                { "english": "nose", "chinese": "鼻子", "phonetic": "/noʊz/", "example": "My nose is small.", "image": "👃" },
+                { "english": "mouth", "chinese": "嘴巴", "phonetic": "/maʊθ/", "example": "Open your mouth.", "image": "👄" },
+                { "english": "hand", "chinese": "手", "phonetic": "/hænd/", "example": "I have two hands.", "image": "✋" },
+                { "english": "foot", "chinese": "腳", "phonetic": "/fʊt/", "example": "My foot hurts.", "image": "🦶" },
+                { "english": "arm", "chinese": "手臂", "phonetic": "/ɑːrm/", "example": "Raise your arm.", "image": "💪" },
+                { "english": "leg", "chinese": "腿", "phonetic": "/leɡ/", "example": "I have long legs.", "image": "🦵" }
+            ],
+            "9": [
+                { "english": "happy", "chinese": "快樂的", "phonetic": "/ˈhæpi/", "example": "I am happy today.", "image": "😄" },
+                { "english": "sad", "chinese": "悲傷的", "phonetic": "/sæd/", "example": "Don't be sad.", "image": "😢" },
+                { "english": "angry", "chinese": "生氣的", "phonetic": "/ˈæŋɡri/", "example": "He is angry.", "image": "😠" },
+                { "english": "tired", "chinese": "累的", "phonetic": "/ˈtaɪərd/", "example": "I am tired.", "image": "😴" },
+                { "english": "hungry", "chinese": "餓的", "phonetic": "/ˈhʌŋɡri/", "example": "I am hungry.", "image": "🍽️" },
+                { "english": "thirsty", "chinese": "渴的", "phonetic": "/ˈθɜːrsti/", "example": "I am thirsty.", "image": "💧" },
+                { "english": "hot", "chinese": "熱的", "phonetic": "/hɑːt/", "example": "It is hot today.", "image": "🔥" },
+                { "english": "cold", "chinese": "冷的", "phonetic": "/koʊld/", "example": "I feel cold.", "image": "❄️" },
+                { "english": "big", "chinese": "大的", "phonetic": "/bɪɡ/", "example": "The elephant is big.", "image": "🐘" },
+                { "english": "small", "chinese": "小的", "phonetic": "/smɔːl/", "example": "The ant is small.", "image": "🐜" }
+            ],
+            "10": [
+                { "english": "good", "chinese": "好的", "phonetic": "/ɡʊd/", "example": "Good morning!", "image": "👍" },
+                { "english": "bad", "chinese": "壞的", "phonetic": "/bæd/", "example": "That's bad.", "image": "👎" },
+                { "english": "new", "chinese": "新的", "phonetic": "/nuː/", "example": "I have a new bag.", "image": "🆕" },
+                { "english": "old", "chinese": "舊的;老的", "phonetic": "/oʊld/", "example": "My grandpa is old.", "image": "👴" },
+                { "english": "young", "chinese": "年輕的", "phonetic": "/jʌŋ/", "example": "She is young.", "image": "👶" },
+                { "english": "beautiful", "chinese": "美麗的", "phonetic": "/ˈbjuːtɪfl/", "example": "The flower is beautiful.", "image": "🌸" },
+                { "english": "cute", "chinese": "可愛的", "phonetic": "/kjuːt/", "example": "The baby is cute.", "image": "🥰" },
+                { "english": "nice", "chinese": "好的;美好的", "phonetic": "/naɪs/", "example": "Have a nice day!", "image": "🌟" },
+                { "english": "clean", "chinese": "乾淨的", "phonetic": "/kliːn/", "example": "My room is clean.", "image": "🧼" },
+                { "english": "dirty", "chinese": "髒的", "phonetic": "/ˈdɜːrti/", "example": "Your hands are dirty.", "image": "🧔" }
+            ],
+            "11": [
+                { "english": "go", "chinese": "去", "phonetic": "/ɡoʊ/", "example": "I go to school.", "image": "🚶" },
+                { "english": "come", "chinese": "來", "phonetic": "/kʌm/", "example": "Come here!", "image": "👋" },
+                { "english": "run", "chinese": "跑", "phonetic": "/rʌn/", "example": "I can run fast.", "image": "🏃" },
+                { "english": "walk", "chinese": "走", "phonetic": "/wɔːk/", "example": "I walk to school.", "image": "🚶" },
+                { "english": "jump", "chinese": "跳", "phonetic": "/dʒʌmp/", "example": "I can jump high.", "image": "🤸" },
+                { "english": "sit", "chinese": "坐", "phonetic": "/sɪt/", "example": "Please sit down.", "image": "🪑" },
+                { "english": "stand", "chinese": "站", "phonetic": "/stænd/", "example": "Stand up, please.", "image": "🧍" },
+                { "english": "sleep", "chinese": "睡覺", "phonetic": "/sliːp/", "example": "I sleep at night.", "image": "😴" },
+                { "english": "eat", "chinese": "吃", "phonetic": "/iːt/", "example": "I eat breakfast.", "image": "🍽️" },
+                { "english": "drink", "chinese": "喝", "phonetic": "/drɪŋk/", "example": "I drink water.", "image": "🥤" }
+            ],
+            "12": [
+                { "english": "read", "chinese": "讀;閱讀", "phonetic": "/riːd/", "example": "I read books.", "image": "📖" },
+                { "english": "write", "chinese": "寫", "phonetic": "/raɪt/", "example": "I write my name.", "image": "✍️" },
+                { "english": "draw", "chinese": "畫", "phonetic": "/drɔː/", "example": "I draw pictures.", "image": "🎨" },
+                { "english": "sing", "chinese": "唱歌", "phonetic": "/sɪŋ/", "example": "I sing a song.", "image": "🎤" },
+                { "english": "dance", "chinese": "跳舞", "phonetic": "/dæns/", "example": "I can dance.", "image": "💃" },
+                { "english": "play", "chinese": "玩;演奏", "phonetic": "/pleɪ/", "example": "I play basketball.", "image": "🏀" },
+                { "english": "watch", "chinese": "看;觀看", "phonetic": "/wɑːtʃ/", "example": "I watch TV.", "image": "📺" },
+                { "english": "listen", "chinese": "聽", "phonetic": "/ˈlɪsn/", "example": "Listen to me.", "image": "👂" },
+                { "english": "speak", "chinese": "說話", "phonetic": "/spiːk/", "example": "I can speak English.", "image": "💬" },
+                { "english": "talk", "chinese": "談話", "phonetic": "/tɔːk/", "example": "Let's talk.", "image": "🗣️" }
+            ],
+            "13": [
+                { "english": "like", "chinese": "喜歡", "phonetic": "/laɪk/", "example": "I like apples.", "image": "❤️" },
+                { "english": "love", "chinese": "愛", "phonetic": "/lʌv/", "example": "I love my mom.", "image": "💕" },
+                { "english": "want", "chinese": "想要", "phonetic": "/wɑːnt/", "example": "I want ice cream.", "image": "🙏" },
+                { "english": "need", "chinese": "需要", "phonetic": "/niːd/", "example": "I need help.", "image": "🆘" },
+                { "english": "have", "chinese": "有", "phonetic": "/hæv/", "example": "I have a dog.", "image": "✅" },
+                { "english": "know", "chinese": "知道", "phonetic": "/noʊ/", "example": "I know the answer.", "image": "💡" },
+                { "english": "think", "chinese": "想;認為", "phonetic": "/θɪŋk/", "example": "I think so.", "image": "🤔" },
+                { "english": "see", "chinese": "看見", "phonetic": "/siː/", "example": "I see a bird.", "image": "👁️" },
+                { "english": "look", "chinese": "看", "phonetic": "/lʊk/", "example": "Look at me!", "image": "👀" },
+                { "english": "hear", "chinese": "聽見", "phonetic": "/hɪr/", "example": "I hear music.", "image": "👂" }
+            ],
+            "14": [
+                { "english": "make", "chinese": "做;製作", "phonetic": "/meɪk/", "example": "I make a cake.", "image": "🎂" },
+                { "english": "do", "chinese": "做", "phonetic": "/duː/", "example": "I do my homework.", "image": "📝" },
+                { "english": "get", "chinese": "得到;拿到", "phonetic": "/ɡet/", "example": "I get a gift.", "image": "🎁" },
+                { "english": "give", "chinese": "給", "phonetic": "/ɡɪv/", "example": "Give me the book.", "image": "🤲" },
+                { "english": "take", "chinese": "拿;帶走", "phonetic": "/teɪk/", "example": "Take your bag.", "image": "👜" },
+                { "english": "put", "chinese": "放", "phonetic": "/pʊt/", "example": "Put it here.", "image": "⬇️" },
+                { "english": "open", "chinese": "打開", "phonetic": "/ˈoʊpən/", "example": "Open the door.", "image": "🚪➡️" },
+                { "english": "close", "chinese": "關閉", "phonetic": "/kloʊz/", "example": "Close the window.", "image": "🚪⬅️" },
+                { "english": "find", "chinese": "找到", "phonetic": "/faɪnd/", "example": "I find my pen.", "image": "🔍" },
+                { "english": "help", "chinese": "幫助", "phonetic": "/help/", "example": "Can you help me?", "image": "🤝" }
+            ],
+            "15": [
+                { "english": "house", "chinese": "房子", "phonetic": "/haʊs/", "example": "I live in a house.", "image": "🏠" },
+                { "english": "home", "chinese": "家", "phonetic": "/hoʊm/", "example": "Welcome to my home.", "image": "🏡" },
+                { "english": "room", "chinese": "房間", "phonetic": "/ruːm/", "example": "My room is big.", "image": "🛌" },
+                { "english": "door", "chinese": "門", "phonetic": "/dɔːr/", "example": "Open the door.", "image": "🚪" },
+                { "english": "window", "chinese": "窗戶", "phonetic": "/ˈwɪndoʊ/", "example": "Close the window.", "image": "🪟" },
+                { "english": "table", "chinese": "桌子", "phonetic": "/ˈteɪbl/", "example": "The table is big.", "image": "🪑🍽️" },
+                { "english": "chair", "chinese": "椅子", "phonetic": "/tʃer/", "example": "Sit on the chair.", "image": "🪑" },
+                { "english": "bed", "chinese": "床", "phonetic": "/bed/", "example": "I sleep in my bed.", "image": "🛏️" },
+                { "english": "desk", "chinese": "書桌", "phonetic": "/desk/", "example": "I study at my desk.", "image": "🪑📚" },
+                { "english": "sofa", "chinese": "沙發", "phonetic": "/ˈsoʊfə/", "example": "The sofa is soft.", "image": "🛋️" }
+            ],
+            "16": [
+                { "english": "school", "chinese": "學校", "phonetic": "/skuːl/", "example": "I go to school.", "image": "🏫" },
+                { "english": "class", "chinese": "班級;課", "phonetic": "/klæs/", "example": "I am in Class 1.", "image": "👨‍🎓" },
+                { "english": "classroom", "chinese": "教室", "phonetic": "/ˈklæsruːm/", "example": "Our classroom is big.", "image": "🚪" },
+                { "english": "book", "chinese": "書", "phonetic": "/bʊk/", "example": "I read a book.", "image": "📖" },
+                { "english": "pen", "chinese": "筆", "phonetic": "/pen/", "example": "I write with a pen.", "image": "🖊️" },
+                { "english": "pencil", "chinese": "鉛筆", "phonetic": "/ˈpensl/", "example": "I draw with a pencil.", "image": "✏️" },
+                { "english": "ruler", "chinese": "尺", "phonetic": "/ˈruːlər/", "example": "I use a ruler.", "image": "📏" },
+                { "english": "eraser", "chinese": "橡皮擦", "phonetic": "/ɪˈreɪsər/", "example": "I need an eraser.", "image": "🧹" },
+                { "english": "bag", "chinese": "袋子;書包", "phonetic": "/bæɡ/", "example": "My bag is heavy.", "image": "🎒" },
+                { "english": "paper", "chinese": "紙", "phonetic": "/ˈpeɪpər/", "example": "I need some paper.", "image": "📄" }
+            ],
+            "17": [
+                { "english": "Monday", "chinese": "星期一", "phonetic": "/ˈmʌndeɪ/", "example": "Today is Monday." },
+                { "english": "Tuesday", "chinese": "星期二", "phonetic": "/ˈtuːzdeɪ/", "example": "I have PE on Tuesday." },
+                { "english": "Wednesday", "chinese": "星期三", "phonetic": "/ˈwenzdeɪ/", "example": "Wednesday is here." },
+                { "english": "Thursday", "chinese": "星期四", "phonetic": "/ˈθɜːrzdeɪ/", "example": "I like Thursday." },
+                { "english": "Friday", "chinese": "星期五", "phonetic": "/ˈfraɪdeɪ/", "example": "Friday is fun." },
+                { "english": "Saturday", "chinese": "星期六", "phonetic": "/ˈsætərdeɪ/", "example": "I play on Saturday." },
+                { "english": "Sunday", "chinese": "星期日", "phonetic": "/ˈsʌndeɪ/", "example": "I rest on Sunday." },
+                { "english": "day", "chinese": "日子;天", "phonetic": "/deɪ/", "example": "Have a nice day!" },
+                { "english": "week", "chinese": "星期;週", "phonetic": "/wiːk/", "example": "There are seven days in a week." },
+                { "english": "today", "chinese": "今天", "phonetic": "/təˈdeɪ/", "example": "What day is today?" }
+            ],
+            "18": [
+                { "english": "morning", "chinese": "早晨;上午", "phonetic": "/ˈmɔːrnɪŋ/", "example": "Good morning!" },
+                { "english": "afternoon", "chinese": "下午", "phonetic": "/ˌæftərˈnuːn/", "example": "Good afternoon!" },
+                { "english": "evening", "chinese": "傍晚;晚上", "phonetic": "/ˈiːvnɪŋ/", "example": "Good evening!" },
+                { "english": "night", "chinese": "夜晚", "phonetic": "/naɪt/", "example": "Good night!" },
+                { "english": "time", "chinese": "時間", "phonetic": "/taɪm/", "example": "What time is it?" },
+                { "english": "hour", "chinese": "小時", "phonetic": "/ˈaʊər/", "example": "One hour has 60 minutes." },
+                { "english": "minute", "chinese": "分鐘", "phonetic": "/ˈmɪnɪt/", "example": "Wait a minute." },
+                { "english": "o'clock", "chinese": "點鐘", "phonetic": "/əˈklɑːk/", "example": "It's 3 o'clock." },
+                { "english": "early", "chinese": "早的", "phonetic": "/ˈɜːrli/", "example": "I wake up early." },
+                { "english": "late", "chinese": "晚的;遲的", "phonetic": "/leɪt/", "example": "Don't be late." }
+            ],
+            "19": [
+                { "english": "spring", "chinese": "春天", "phonetic": "/sprɪŋ/", "example": "Spring is beautiful.", "image": "🌸" },
+                { "english": "summer", "chinese": "夏天", "phonetic": "/ˈsʌmər/", "example": "Summer is hot.", "image": "☀️" },
+                { "english": "fall", "chinese": "秋天", "phonetic": "/fɔːl/", "example": "I like fall.", "image": "🍂" },
+                { "english": "winter", "chinese": "冬天", "phonetic": "/ˈwɪntər/", "example": "Winter is cold.", "image": "⛄" },
+                { "english": "weather", "chinese": "天氣", "phonetic": "/ˈweðər/", "example": "The weather is nice.", "image": "🌤️" },
+                { "english": "sun", "chinese": "太陽", "phonetic": "/sʌn/", "example": "The sun is bright.", "image": "☀️" },
+                { "english": "rain", "chinese": "雨;下雨", "phonetic": "/reɪn/", "example": "It will rain tomorrow.", "image": "🌧️" },
+                { "english": "wind", "chinese": "風", "phonetic": "/wɪnd/", "example": "The wind is strong.", "image": "💨" },
+                { "english": "snow", "chinese": "雪;下雪", "phonetic": "/snoʊ/", "example": "I love snow.", "image": "❄️" },
+                { "english": "cloud", "chinese": "雲", "phonetic": "/klaʊd/", "example": "The clouds are white.", "image": "☁️" }
+            ],
+            "20": [
+                { "english": "park", "chinese": "公園", "phonetic": "/pɑːrk/", "example": "I play in the park.", "image": "🏞️" },
+                { "english": "store", "chinese": "商店", "phonetic": "/stɔːr/", "example": "I go to the store.", "image": "🏪" },
+                { "english": "library", "chinese": "圖書館", "phonetic": "/ˈlaɪbreri/", "example": "I read in the library.", "image": "📚" },
+                { "english": "hospital", "chinese": "醫院", "phonetic": "/ˈhɑːspɪtl/", "example": "My mom works at a hospital.", "image": "🏥" },
+                { "english": "restaurant", "chinese": "餐廳", "phonetic": "/ˈrestrɑːnt/", "example": "We eat at a restaurant.", "image": "🍽️" },
+                { "english": "bank", "chinese": "銀行", "phonetic": "/bæŋk/", "example": "Dad goes to the bank.", "image": "🏦" },
+                { "english": "post office", "chinese": "郵局", "phonetic": "/poʊst ˈɔːfɪs/", "example": "I send letters at the post office.", "image": "📮" },
+                { "english": "zoo", "chinese": "動物園", "phonetic": "/zuː/", "example": "I see animals at the zoo.", "image": "🦁" },
+                { "english": "beach", "chinese": "海灘", "phonetic": "/biːtʃ/", "example": "I play at the beach.", "image": "🏖️" },
+                { "english": "mountain", "chinese": "山", "phonetic": "/ˈmaʊntən/", "example": "The mountain is tall.", "image": "⛰️" }
+            ],
+            "21": [
+                { "english": "car", "chinese": "汽車", "phonetic": "/kɑːr/", "example": "My dad has a car.", "image": "🚗" },
+                { "english": "bus", "chinese": "公車", "phonetic": "/bʌs/", "example": "I take the bus to school.", "image": "🚌" },
+                { "english": "train", "chinese": "火車", "phonetic": "/treɪn/", "example": "The train is fast.", "image": "🚂" },
+                { "english": "bike", "chinese": "腳踏車", "phonetic": "/baɪk/", "example": "I ride my bike.", "image": "🚲" },
+                { "english": "plane", "chinese": "飛機", "phonetic": "/pleɪn/", "example": "The plane flies high.", "image": "✈️" },
+                { "english": "ship", "chinese": "船", "phonetic": "/ʃɪp/", "example": "The ship is big.", "image": "🚢" },
+                { "english": "taxi", "chinese": "計程車", "phonetic": "/ˈtæksi/", "example": "We take a taxi.", "image": "🚕" },
+                { "english": "truck", "chinese": "卡車", "phonetic": "/trʌk/", "example": "The truck is heavy.", "image": "🚚" },
+                { "english": "boat", "chinese": "小船", "phonetic": "/boʊt/", "example": "I see a boat.", "image": "⛵" },
+                { "english": "subway", "chinese": "地鐵", "phonetic": "/ˈsʌbweɪ/", "example": "I ride the subway.", "image": "🚇" }
+            ],
+            "22": [
+                { "english": "ball", "chinese": "球", "phonetic": "/bɔːl/", "example": "I play with a ball.", "image": "⚽" },
+                { "english": "toy", "chinese": "玩具", "phonetic": "/tɔɪ/", "example": "I have many toys.", "image": "🧸" },
+                { "english": "doll", "chinese": "洋娃娃", "phonetic": "/dɑːl/", "example": "My sister has a doll.", "image": "👶" },
+                { "english": "game", "chinese": "遊戲;比賽", "phonetic": "/ɡeɪm/", "example": "Let's play a game.", "image": "🎮" },
+                { "english": "kite", "chinese": "風箏", "phonetic": "/kaɪt/", "example": "I fly a kite.", "image": "🪁" },
+                { "english": "puzzle", "chinese": "拼圖", "phonetic": "/ˈpʌzl/", "example": "I do a puzzle.", "image": "🧩" },
+                { "english": "card", "chinese": "卡片;撲克牌", "phonetic": "/kɑːrd/", "example": "I play cards.", "image": "🃏" },
+                { "english": "block", "chinese": "積木", "phonetic": "/blɑːk/", "example": "I build with blocks.", "image": "🧱" },
+                { "english": "robot", "chinese": "機器人", "phonetic": "/ˈroʊbɑːt/", "example": "I have a robot toy.", "image": "🤖" },
+                { "english": "balloon", "chinese": "氣球", "phonetic": "/bəˈluːn/", "example": "I like balloons.", "image": "🎈" }
+            ],
+            "23": [
+                { "english": "happy birthday", "chinese": "生日快樂", "phonetic": "/ˈhæpi ˈbɜːrθdeɪ/", "example": "Happy birthday to you!", "image": "🎂" },
+                { "english": "thank you", "chinese": "謝謝你", "phonetic": "/θæŋk juː/", "example": "Thank you very much.", "image": "🙏" },
+                { "english": "please", "chinese": "請", "phonetic": "/pliːz/", "example": "Please help me.", "image": "🙏" },
+                { "english": "sorry", "chinese": "對不起", "phonetic": "/ˈsɑːri/", "example": "I am sorry.", "image": "😔" },
+                { "english": "excuse me", "chinese": "不好意思;對不起", "phonetic": "/ɪkˈskjuːz miː/", "example": "Excuse me, where is the library?", "image": "🙋" },
+                { "english": "hello", "chinese": "哈囉;你好", "phonetic": "/həˈloʊ/", "example": "Hello! How are you?", "image": "👋" },
+                { "english": "goodbye", "chinese": "再見", "phonetic": "/ɡʊdˈbaɪ/", "example": "Goodbye! See you tomorrow.", "image": "👋" },
+                { "english": "yes", "chinese": "是的", "phonetic": "/jes/", "example": "Yes, I do.", "image": "✅" },
+                { "english": "no", "chinese": "不;沒有", "phonetic": "/noʊ/", "example": "No, thank you.", "image": "❌" },
+                { "english": "OK", "chinese": "好;可以", "phonetic": "/oʊˈkeɪ/", "example": "OK, I will do it.", "image": "👍" }
+            ],
+            "24": [
+                { "english": "shirt", "chinese": "襯衫", "phonetic": "/ʃɜːrt/", "example": "I wear a white shirt.", "image": "👔" },
+                { "english": "pants", "chinese": "長褲", "phonetic": "/pænts/", "example": "My pants are blue.", "image": "👖" },
+                { "english": "dress", "chinese": "洋裝", "phonetic": "/dres/", "example": "She wears a pretty dress.", "image": "👗" },
+                { "english": "skirt", "chinese": "裙子", "phonetic": "/skɜːrt/", "example": "I like this skirt.", "image": "👗" },
+                { "english": "shoes", "chinese": "鞋子", "phonetic": "/ʃuːz/", "example": "My shoes are new.", "image": "👟" },
+                { "english": "socks", "chinese": "襪子", "phonetic": "/sɑːks/", "example": "I wear socks.", "image": "🧦" },
+                { "english": "hat", "chinese": "帽子", "phonetic": "/hæt/", "example": "I have a red hat.", "image": "🎩" },
+                { "english": "coat", "chinese": "外套", "phonetic": "/koʊt/", "example": "It's cold. Wear your coat.", "image": "🧥" },
+                { "english": "jacket", "chinese": "夾克", "phonetic": "/ˈdʒækɪt/", "example": "I wear a jacket.", "image": "🧥" },
+                { "english": "sweater", "chinese": "毛衣", "phonetic": "/ˈswetər/", "example": "The sweater is warm.", "image": "🧶" }
+            ],
+            "25": [
+                { "english": "name", "chinese": "名字", "phonetic": "/neɪm/", "example": "What is your name?" },
+                { "english": "age", "chinese": "年齡", "phonetic": "/eɪdʒ/", "example": "How old are you?" },
+                { "english": "birthday", "chinese": "生日", "phonetic": "/ˈbɜːrθdeɪ/", "example": "Today is my birthday." },
+                { "english": "year", "chinese": "年", "phonetic": "/jɪr/", "example": "I am 10 years old." },
+                { "english": "month", "chinese": "月", "phonetic": "/mʌnθ/", "example": "There are 12 months." },
+                { "english": "date", "chinese": "日期", "phonetic": "/deɪt/", "example": "What's the date today?" },
+                { "english": "January", "chinese": "一月", "phonetic": "/ˈdʒænjueri/", "example": "My birthday is in January." },
+                { "english": "February", "chinese": "二月", "phonetic": "/ˈfebrueri/", "example": "February is short." },
+                { "english": "March", "chinese": "三月", "phonetic": "/mɑːrtʃ/", "example": "Spring starts in March." },
+                { "english": "April", "chinese": "四月", "phonetic": "/ˈeɪprəl/", "example": "April showers bring May flowers." }
+            ],
+            "26": [
+                { "english": "May", "chinese": "五月", "phonetic": "/meɪ/", "example": "May is a lovely month." },
+                { "english": "June", "chinese": "六月", "phonetic": "/dʒuːn/", "example": "School ends in June." },
+                { "english": "July", "chinese": "七月", "phonetic": "/dʒuˈlaɪ/", "example": "July is very hot." },
+                { "english": "August", "chinese": "八月", "phonetic": "/ˈɔːɡəst/", "example": "I vacation in August." },
+                { "english": "September", "chinese": "九月", "phonetic": "/sepˈtembər/", "example": "School starts in September." },
+                { "english": "October", "chinese": "十月", "phonetic": "/ɑːkˈtoʊbər/", "example": "October is beautiful." },
+                { "english": "November", "chinese": "十一月", "phonetic": "/noʊˈvembər/", "example": "November is cool." },
+                { "english": "December", "chinese": "十二月", "phonetic": "/dɪˈsembər/", "example": "December is cold." },
+                { "english": "first", "chinese": "第一", "phonetic": "/fɜːrst/", "example": "I am first in line." },
+                { "english": "second", "chinese": "第二", "phonetic": "/ˈsekənd/", "example": "You are second." }
+            ],
+            "27": [
+                { "english": "third", "chinese": "第三", "phonetic": "/θɜːrd/", "example": "He is third." },
+                { "english": "last", "chinese": "最後的", "phonetic": "/læst/", "example": "She is last." },
+                { "english": "next", "chinese": "下一個的", "phonetic": "/nekst/", "example": "You are next." },
+                { "english": "before", "chinese": "在...之前", "phonetic": "/bɪˈfɔːr/", "example": "Before dinner." },
+                { "english": "after", "chinese": "在...之後", "phonetic": "/ˈæftər/", "example": "After school." },
+                { "english": "now", "chinese": "現在", "phonetic": "/naʊ/", "example": "Come here now!" },
+                { "english": "then", "chinese": "那時;然後", "phonetic": "/ðen/", "example": "First eat, then play." },
+                { "english": "always", "chinese": "總是", "phonetic": "/ˈɔːlweɪz/", "example": "I always brush my teeth." },
+                { "english": "sometimes", "chinese": "有時候", "phonetic": "/ˈsʌmtaɪmz/", "example": "I sometimes eat pizza." },
+                { "english": "never", "chinese": "從不", "phonetic": "/ˈnevər/", "example": "I never lie." }
+            ],
+            "28": [
+                { "english": "here", "chinese": "這裡", "phonetic": "/hɪr/", "example": "Come here!", "image": "📍" },
+                { "english": "there", "chinese": "那裡", "phonetic": "/ðer/", "example": "Go there!", "image": "👉📍" },
+                { "english": "where", "chinese": "哪裡", "phonetic": "/wer/", "example": "Where are you?", "image": "❓📍" },
+                { "english": "in", "chinese": "在...裡面", "phonetic": "/ɪn/", "example": "The cat is in the box.", "image": "📦🐱" },
+                { "english": "on", "chinese": "在...上面", "phonetic": "/ɑːn/", "example": "The book is on the table.", "image": "📚⬆️" },
+                { "english": "under", "chinese": "在...下面", "phonetic": "/ˈʌndər/", "example": "The dog is under the chair.", "image": "⬇️🐕" },
+                { "english": "near", "chinese": "靠近;接近", "phonetic": "/nɪr/", "example": "The park is near my house.", "image": "🏠↔️🏞️" },
+                { "english": "far", "chinese": "遠的", "phonetic": "/fɑːr/", "example": "The store is far away.", "image": "🏠↔️↔️↔️🏪" },
+                { "english": "up", "chinese": "向上", "phonetic": "/ʌp/", "example": "Look up!", "image": "⬆️" },
+                { "english": "down", "chinese": "向下", "phonetic": "/daʊn/", "example": "Look down!", "image": "⬇️" }
+            ],
+            "29": [
+                { "english": "left", "chinese": "左邊", "phonetic": "/left/", "example": "Turn left!", "image": "⬅️" },
+                { "english": "right", "chinese": "右邊", "phonetic": "/raɪt/", "example": "Turn right!", "image": "➡️" },
+                { "english": "front", "chinese": "前面", "phonetic": "/frʌnt/", "example": "He is in front of me.", "image": "👦⬆️👧" },
+                { "english": "back", "chinese": "後面", "phonetic": "/bæk/", "example": "She is at the back.", "image": "👧⬇️👦" },
+                { "english": "inside", "chinese": "裡面", "phonetic": "/ˌɪnˈsaɪd/", "example": "Come inside!", "image": "🏠➡️" },
+                { "english": "outside", "chinese": "外面", "phonetic": "/ˌaʊtˈsaɪd/", "example": "Play outside!", "image": "⬅️🏠" },
+                { "english": "between", "chinese": "在...之間", "phonetic": "/bɪˈtwiːn/", "example": "I sit between Tom and Mary.", "image": "👦👧👦" },
+                { "english": "next to", "chinese": "在...旁邊", "phonetic": "/nekst tuː/", "example": "I sit next to you.", "image": "👧👦" },
+                { "english": "behind", "chinese": "在...後面", "phonetic": "/bɪˈhaɪnd/", "example": "The cat is behind the door.", "image": "🚪🐱" },
+                { "english": "in front of", "chinese": "在...前面", "phonetic": "/ɪn frʌnt ʌv/", "example": "I stand in front of the class.", "image": "👦🏫" }
+            ],
+            "30": [
+                { "english": "this", "chinese": "這個", "phonetic": "/ðɪs/", "example": "This is my book.", "image": "" },
+                { "english": "that", "chinese": "那個", "phonetic": "/ðæt/", "example": "That is your pen.", "image": "" },
+                { "english": "these", "chinese": "這些", "phonetic": "/ðiːz/", "example": "These are my friends.", "image": "" },
+                { "english": "those", "chinese": "那些", "phonetic": "/ðoʊz/", "example": "Those are beautiful flowers.", "image": "" },
+                { "english": "what", "chinese": "什麼", "phonetic": "/wɑːt/", "example": "What is this?", "image": "❓" },
+                { "english": "who", "chinese": "誰", "phonetic": "/huː/", "example": "Who are you?", "image": "❓👤" },
+                { "english": "how", "chinese": "如何;怎麼樣", "phonetic": "/haʊ/", "example": "How are you?", "image": "❓🤔" },
+                { "english": "why", "chinese": "為什麼", "phonetic": "/waɪ/", "example": "Why are you sad?", "image": "❓💭" },
+                { "english": "when", "chinese": "何時", "phonetic": "/wen/", "example": "When is your birthday?", "image": "❓⏰" },
+                { "english": "which", "chinese": "哪一個", "phonetic": "/wɪtʃ/", "example": "Which is your book?", "image": "❓👉" }
+            ],
+            "31": [
+                { "english": "many", "chinese": "許多的", "phonetic": "/ˈmeni/", "example": "I have many friends.", "image": "👥👥👥" },
+                { "english": "much", "chinese": "很多的", "phonetic": "/mʌtʃ/", "example": "Thank you very much.", "image": "❤️❤️❤️" },
+                { "english": "some", "chinese": "一些", "phonetic": "/sʌm/", "example": "I want some water.", "image": "💧💧💧" },
+                { "english": "any", "chinese": "任何的;一些", "phonetic": "/ˈeni/", "example": "Do you have any pencils?", "image": "❓" },
+                { "english": "all", "chinese": "全部的", "phonetic": "/ɔːl/", "example": "All students are here.", "image": "💯" },
+                { "english": "every", "chinese": "每個的", "phonetic": "/ˈevri/", "example": "Every day I study.", "image": "📅" },
+                { "english": "each", "chinese": "每個的", "phonetic": "/iːtʃ/", "example": "Each student has a book.", "image": "1️⃣" },
+                { "english": "other", "chinese": "其他的", "phonetic": "/ˈʌðər/", "example": "Where are the other students?", "image": "👈👉" },
+                { "english": "another", "chinese": "另一個", "phonetic": "/əˈnʌðər/", "example": "I want another apple.", "image": "➕🍎" },
+                { "english": "both", "chinese": "兩者都", "phonetic": "/boʊθ/", "example": "Both books are good.", "image": "✌️" }
+            ],
+            "32": [
+                { "english": "tall", "chinese": "高的", "phonetic": "/tɔːl/", "example": "He is very tall.", "image": "🦒" },
+                { "english": "short", "chinese": "矮的;短的", "phonetic": "/ʃɔːrt/", "example": "I am short.", "image": "🐭" },
+                { "english": "long", "chinese": "長的", "phonetic": "/lɔːŋ/", "example": "She has long hair.", "image": "👩" },
+                { "english": "fat", "chinese": "胖的", "phonetic": "/fæt/", "example": "The pig is fat.", "image": "🐷" },
+                { "english": "thin", "chinese": "瘦的", "phonetic": "/θɪn/", "example": "He is thin.", "image": "🥖" },
+                { "english": "strong", "chinese": "強壯的", "phonetic": "/strɔːŋ/", "example": "My dad is strong.", "image": "💪" },
+                { "english": "weak", "chinese": "虛弱的", "phonetic": "/wiːk/", "example": "I feel weak.", "image": "😰" },
+                { "english": "fast", "chinese": "快的", "phonetic": "/fæst/", "example": "The car is fast.", "image": "🏎️" },
+                { "english": "slow", "chinese": "慢的", "phonetic": "/sloʊ/", "example": "The turtle is slow.", "image": "🐢" },
+                { "english": "heavy", "chinese": "重的", "phonetic": "/ˈhevi/", "example": "The box is heavy.", "image": "📦⚡" }
+            ],
+            "33": [
+                { "english": "light", "chinese": "輕的;光", "phonetic": "/laɪt/", "example": "The bag is light.", "image": "🎈" },
+                { "english": "bright", "chinese": "明亮的", "phonetic": "/braɪt/", "example": "The room is bright.", "image": "💡" },
+                { "english": "dark", "chinese": "黑暗的", "phonetic": "/dɑːrk/", "example": "It is dark at night.", "image": "🌙" },
+                { "english": "loud", "chinese": "大聲的", "phonetic": "/laʊd/", "example": "Don't be loud.", "image": "📢" },
+                { "english": "quiet", "chinese": "安靜的", "phonetic": "/ˈkwaɪət/", "example": "Please be quiet.", "image": "🤫" },
+                { "english": "high", "chinese": "高的", "phonetic": "/haɪ/", "example": "The bird flies high.", "image": "🦅⬆️" },
+                { "english": "low", "chinese": "低的", "phonetic": "/loʊ/", "example": "The chair is low.", "image": "⬇️" },
+                { "english": "hard", "chinese": "困難的;硬的", "phonetic": "/hɑːrd/", "example": "This is hard.", "image": "🪨" },
+                { "english": "easy", "chinese": "容易的", "phonetic": "/ˈiːzi/", "example": "This is easy.", "image": "😊👍" },
+                { "english": "soft", "chinese": "軟的", "phonetic": "/sɔːft/", "example": "The pillow is soft.", "image": "🛏️" }
+            ],
+            "34": [
+                { "english": "same", "chinese": "相同的", "phonetic": "/seɪm/", "example": "We are the same age.", "image": "👯‍♀️" },
+                { "english": "different", "chinese": "不同的", "phonetic": "/ˈdɪfrənt/", "example": "We are different.", "image": "🍎🍊" },
+                { "english": "right", "chinese": "正確的", "phonetic": "/raɪt/", "example": "Your answer is right.", "image": "✅" },
+                { "english": "wrong", "chinese": "錯誤的", "phonetic": "/rɔːŋ/", "example": "This is wrong.", "image": "❌" },
+                { "english": "true", "chinese": "真實的", "phonetic": "/truː/", "example": "Is this true?", "image": "✔️" },
+                { "english": "false", "chinese": "錯誤的", "phonetic": "/fɔːls/", "example": "That is false.", "image": "✖️" },
+                { "english": "full", "chinese": "滿的", "phonetic": "/fʊl/", "example": "The cup is full.", "image": "🥛" },
+                { "english": "empty", "chinese": "空的", "phonetic": "/ˈempti/", "example": "The box is empty.", "image": "📦❌" },
+                { "english": "open", "chinese": "開著的", "phonetic": "/ˈoʊpən/", "example": "The door is open.", "image": "🚪➡️" },
+                { "english": "closed", "chinese": "關閉的", "phonetic": "/kloʊzd/", "example": "The window is closed.", "image": "🪟❌" }
+            ],
+            "35": [
+                { "english": "ready", "chinese": "準備好的", "phonetic": "/ˈredi/", "example": "Are you ready?", "image": "✅🎯" },
+                { "english": "busy", "chinese": "忙碌的", "phonetic": "/ˈbɪzi/", "example": "I am busy now.", "image": "💼" },
+                { "english": "free", "chinese": "有空的;自由的", "phonetic": "/friː/", "example": "I am free today.", "image": "🕊️" },
+                { "english": "sick", "chinese": "生病的", "phonetic": "/sɪk/", "example": "I feel sick.", "image": "🤒" },
+                { "english": "healthy", "chinese": "健康的", "phonetic": "/ˈhelθi/", "example": "I am healthy.", "image": "💪😊" },
+                { "english": "well", "chinese": "好地;健康的", "phonetic": "/wel/", "example": "I am well.", "image": "😊👍" },
+                { "english": "better", "chinese": "更好的", "phonetic": "/ˈbetər/", "example": "I feel better now.", "image": "📈" },
+                { "english": "best", "chinese": "最好的", "phonetic": "/best/", "example": "You are the best!", "image": "🏆" },
+                { "english": "worse", "chinese": "更糟的", "phonetic": "/wɜːrs/", "example": "I feel worse today.", "image": "📉" },
+                { "english": "worst", "chinese": "最糟的", "phonetic": "/wɜːrst/", "example": "This is the worst day.", "image": "😭" }
+            ],
+            "36": [
+                { "english": "more", "chinese": "更多的", "phonetic": "/mɔːr/", "example": "I want more juice.", "image": "➕" },
+                { "english": "less", "chinese": "更少的", "phonetic": "/les/", "example": "I eat less candy.", "image": "➖" },
+                { "english": "most", "chinese": "最多的", "phonetic": "/moʊst/", "example": "He has the most toys.", "image": "🔝" },
+                { "english": "least", "chinese": "最少的", "phonetic": "/liːst/", "example": "I have the least money.", "image": "🔽" },
+                { "english": "only", "chinese": "只有;僅僅", "phonetic": "/ˈoʊnli/", "example": "I have only one pen.", "image": "1️⃣" },
+                { "english": "also", "chinese": "也", "phonetic": "/ˈɔːlsoʊ/", "example": "I also like apples.", "image": "➕" },
+                { "english": "too", "chinese": "也;太", "phonetic": "/tuː/", "example": "I like apples too.", "image": "➕" },
+                { "english": "very", "chinese": "非常", "phonetic": "/ˈveri/", "example": "I am very happy.", "image": "💯" },
+                { "english": "really", "chinese": "真的;非常", "phonetic": "/ˈriːəli/", "example": "I really like it.", "image": "‼️" },
+                { "english": "so", "chinese": "如此;所以", "phonetic": "/soʊ/", "example": "I am so tired.", "image": "😫" }
+            ],
+            "37": [
+                { "english": "because", "chinese": "因為", "phonetic": "/bɪˈkɔːz/", "example": "I am happy because it's sunny.", "image": "➡️" },
+                { "english": "but", "chinese": "但是", "phonetic": "/bʌt/", "example": "I like apples but not bananas.", "image": "⚡" },
+                { "english": "and", "chinese": "和;而且", "phonetic": "/ænd/", "example": "I have a dog and a cat.", "image": "➕" },
+                { "english": "or", "chinese": "或者", "phonetic": "/ɔːr/", "example": "Do you want tea or coffee?", "image": "🔀" },
+                { "english": "if", "chinese": "如果", "phonetic": "/ɪf/", "example": "If it rains, stay inside.", "image": "🤔" },
+                { "english": "when", "chinese": "當...的時候", "phonetic": "/wen/", "example": "When I grow up, I want to be a doctor.", "image": "⏰" },
+                { "english": "while", "chinese": "當...的時候", "phonetic": "/waɪl/", "example": "I read while eating.", "image": "⏱️" },
+                { "english": "until", "chinese": "直到", "phonetic": "/ənˈtɪl/", "example": "Wait until I come back.", "image": "⏳" },
+                { "english": "with", "chinese": "和...一起", "phonetic": "/wɪð/", "example": "Come with me.", "image": "🤝" },
+                { "english": "without", "chinese": "沒有", "phonetic": "/wɪˈðaʊt/", "example": "I can't live without water.", "image": "🚫" }
+            ],
+            "38": [
+                { "english": "to", "chinese": "到;向", "phonetic": "/tuː/", "example": "I go to school.", "image": "➡️🏫" },
+                { "english": "from", "chinese": "從", "phonetic": "/frʌm/", "example": "I am from Taiwan.", "image": "🇹🇼➡️" },
+                { "english": "for", "chinese": "為了;給", "phonetic": "/fɔːr/", "example": "This is for you.", "image": "🎁➡️👦" },
+                { "english": "about", "chinese": "關於", "phonetic": "/əˈbaʊt/", "example": "Tell me about your day.", "image": "💬" },
+                { "english": "of", "chinese": "...的", "phonetic": "/ʌv/", "example": "I drink a glass of water.", "image": "🥛" },
+                { "english": "at", "chinese": "在(某處)", "phonetic": "/æt/", "example": "I am at school.", "image": "📍🏫" },
+                { "english": "by", "chinese": "藉由;在...旁邊", "phonetic": "/baɪ/", "example": "I go to school by bus.", "image": "🚌" },
+                { "english": "into", "chinese": "進入", "phonetic": "/ˈɪntuː/", "example": "Come into the house.", "image": "➡️🏠" },
+                { "english": "out", "chinese": "出去", "phonetic": "/aʊt/", "example": "Go out and play.", "image": "⬅️🏠" },
+                { "english": "over", "chinese": "在...上方;結束", "phonetic": "/ˈoʊvər/", "example": "The bird flies over the house.", "image": "🐦⤴️🏠" }
+            ],
+            "39": [
+                { "english": "across", "chinese": "穿過", "phonetic": "/əˈkrɔːs/", "example": "Walk across the street.", "image": "🚶↔️🛣️" },
+                { "english": "through", "chinese": "穿過;通過", "phonetic": "/θruː/", "example": "Go through the door.", "image": "🚶➡️🚪" },
+                { "english": "during", "chinese": "在...期間", "phonetic": "/ˈdʊrɪŋ/", "example": "I sleep during the night.", "image": "🌙⏰" },
+                { "english": "off", "chinese": "離開;關閉", "phonetic": "/ɔːf/", "example": "Turn off the light.", "image": "💡❌" },
+                { "english": "away", "chinese": "離開", "phonetic": "/əˈweɪ/", "example": "Go away!", "image": "🏃➡️" },
+                { "english": "together", "chinese": "一起", "phonetic": "/təˈɡeðər/", "example": "Let's play together.", "image": "👦🤝👧" },
+                { "english": "alone", "chinese": "單獨;獨自", "phonetic": "/əˈloʊn/", "example": "I am alone at home.", "image": "👤" },
+                { "english": "again", "chinese": "再一次", "phonetic": "/əˈɡen/", "example": "Say it again, please.", "image": "🔄" },
+                { "english": "still", "chinese": "仍然;還是", "phonetic": "/stɪl/", "example": "I am still hungry.", "image": "⏸️" },
+                { "english": "just", "chinese": "剛剛;只是", "phonetic": "/dʒʌst/", "example": "I just finished my homework.", "image": "✅" }
+            ],
+            "40": [
+                { "english": "already", "chinese": "已經", "phonetic": "/ɔːlˈredi/", "example": "I already ate lunch.", "image": "✅🍱" },
+                { "english": "yet", "chinese": "還;尚未", "phonetic": "/jet/", "example": "I am not ready yet.", "image": "⏳" },
+                { "english": "soon", "chinese": "很快;不久", "phonetic": "/suːn/", "example": "See you soon!", "image": "⏱️" },
+                { "english": "later", "chinese": "稍後;之後", "phonetic": "/ˈleɪtər/", "example": "See you later!", "image": "⏰" },
+                { "english": "enough", "chinese": "足夠的", "phonetic": "/ɪˈnʌf/", "example": "I have enough food.", "image": "✅💯" },
+                { "english": "little", "chinese": "小的;少的", "phonetic": "/ˈlɪtl/", "example": "I have a little money.", "image": "🪙" },
+                { "english": "few", "chinese": "少數的", "phonetic": "/fjuː/", "example": "I have a few friends.", "image": "👥" },
+                { "english": "several", "chinese": "幾個", "phonetic": "/ˈsevrəl/", "example": "I have several books.", "image": "📚📚📚" },
+                { "english": "such", "chinese": "這樣的", "phonetic": "/sʌtʃ/", "example": "Such a beautiful day!", "image": "✨" },
+                { "english": "own", "chinese": "自己的", "phonetic": "/oʊn/", "example": "This is my own room.", "image": "🏠👤" }
+            ]
+        };
+
+        // ==========================================
+        // 全域變數
+        // ==========================================
+        
+        let currentLesson = null;
+        let currentWordIndex = 0;
+        let lessonWords = [];
+        let completedLessons = new Set();
+
+        // ==========================================
+        // 跨平台事件處理模組
+        // ==========================================
+        
+        const CrossPlatformEvents = {
+            bind(element, callback) {
+                if (!element || element.dataset.eventBound === 'true') return;
+
+                // 觸控事件 (手機/平板)
+                element.addEventListener('touchstart', (e) => {
+                    element.style.transform = 'scale(0.98)';
+                }, { passive: true });
+
+                element.addEventListener('touchend', (e) => {
+                    element.style.transform = 'scale(1)';
+                    e.preventDefault(); // 防止觸發 click 事件
+                    callback(e);
+                });
+
+                // 滑鼠事件 (電腦)
+                element.addEventListener('click', (e) => {
+                    callback(e);
+                });
+
+                element.dataset.eventBound = 'true';
+            },
+
+            bindAll(selector, callback) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => this.bind(el, callback));
+            }
+        };
+
+        // ==========================================
+        // 初始化
+        // ==========================================
+        
+        function init() {
+            loadProgress();
+            renderLessons();
+            updateStats();
+            bindGlobalEvents();
+        }
+
+        // ==========================================
+        // 渲染課程列表
+        // ==========================================
+        
+        function renderLessons() {
+            const grid = document.getElementById('lessonsGrid');
+            let html = '';
+
+            for (let i = 1; i <= 40; i++) {
+                const isCompleted = completedLessons.has(i);
+                html += `
+                    <div class="lesson-card ${isCompleted ? 'completed' : ''}" data-action="start-lesson" data-lesson="${i}">
+                        <h3>Lesson ${i}</h3>
+                        <p>${isCompleted ? '✅ 已完成' : '📚 開始學習'}</p>
+                        <span class="word-count">10 單字</span>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = html;
+
+            // 使用跨平台事件綁定
+            setTimeout(() => {
+                const cards = document.querySelectorAll('[data-action="start-lesson"]');
+                cards.forEach(card => {
+                    CrossPlatformEvents.bind(card, () => {
+                        const lessonNum = parseInt(card.dataset.lesson);
+                        startLesson(lessonNum);
+                    });
+                });
+            }, 10);
+        }
+
+        // ==========================================
+        // 開始課程
+        // ==========================================
+        
+        function startLesson(lessonNum) {
+            currentLesson = lessonNum;
+            currentWordIndex = 0;
+            lessonWords = LESSONS_DATA[lessonNum] || [];
+
+            if (lessonWords.length === 0) {
+                alert('此課程暫無單字資料');
+                return;
+            }
+
+            // 切換視圖 - 確保完全隱藏選單
+            const lessonsView = document.getElementById('lessonsView');
+            const flashcardContainer = document.getElementById('flashcardContainer');
+            lessonsView.style.display = 'none';
+            flashcardContainer.style.display = 'block';
+            flashcardContainer.classList.add('active');
+
+            // 顯示第一個單字
+            showWord(0);
+            // 重新綁定事件(確保按鈕有效)
+            setTimeout(() => {
+                bindGlobalEvents();
+            }, 50);
+        }
+
+        // ==========================================
+        // 顯示單字
+        // ==========================================
+        
+        function showWord(index) {
+            if (index < 0 || index >= lessonWords.length) return;
+
+            currentWordIndex = index;
+            const word = lessonWords[index];
+
+            // 更新計數器
+            document.getElementById('wordCounter').textContent = 
+                `第 ${index + 1} / ${lessonWords.length} 個單字`;
+
+            // 更新圖示(如果有的話)
+            const imageContainer = document.getElementById('imageContainer');
+            if (word.image) {
+                imageContainer.textContent = word.image;
+                imageContainer.style.display = 'flex';
+            } else {
+                imageContainer.textContent = '';
+                imageContainer.style.display = 'none';
+            }
+
+            // 更新閃卡正面
+            document.getElementById('wordEnglish').textContent = word.english;
+            document.getElementById('wordPhonetic').textContent = word.phonetic;
+
+            // 更新閃卡背面
+            document.getElementById('wordChinese').textContent = word.chinese;
+            document.getElementById('wordExample').textContent = word.example;
+
+            // 重置翻轉狀態
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        // ==========================================
+        // 語音功能
+        // ==========================================
+        
+        function speakText(text, lang = 'en-US', rate = 0.85) {
+            if (!text || text.trim() === '') return;
+
+            if ('speechSynthesis' in window) {
+                // 停止當前播放
+                speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = rate;
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('您的瀏覽器不支援語音功能');
+            }
+        }
+
+        // ==========================================
+        // 綁定全域事件
+        // ==========================================
+        
+        function bindGlobalEvents() {
+            // 翻轉卡片 - 需要排除按鈕點擊
+            const flashcard = document.getElementById('flashcard');
+            if (flashcard) {
+                CrossPlatformEvents.bind(flashcard, (e) => {
+                    // 如果點擊的是按鈕,不要翻轉卡片
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                        return;
+                    }
+                    flashcard.classList.toggle('flipped');
+                });
+            }
+
+            // 所有按鈕事件
+            setTimeout(() => {
+                // 發音按鈕
+                CrossPlatformEvents.bindAll('[data-action="speak-word"]', (e) => {
+                    e.stopPropagation(); // 防止事件冒泡
+                    const word = lessonWords[currentWordIndex];
+                    if (word) speakText(word.english);
+                });
+
+                CrossPlatformEvents.bindAll('[data-action="speak-word-again"]', (e) => {
+                    e.stopPropagation();
+                    const word = lessonWords[currentWordIndex];
+                    if (word) speakText(word.english);
+                });
+
+                CrossPlatformEvents.bindAll('[data-action="speak-example"]', (e) => {
+                    e.stopPropagation();
+                    const word = lessonWords[currentWordIndex];
+                    if (word) speakText(word.example);
+                });
+
+                // 導航按鈕
+                CrossPlatformEvents.bindAll('[data-action="previous-word"]', (e) => {
+                    e.stopPropagation();
+                    if (currentWordIndex > 0) {
+                        showWord(currentWordIndex - 1);
+                    }
+                });
+
+                CrossPlatformEvents.bindAll('[data-action="next-word"]', (e) => {
+                    e.stopPropagation();
+                    if (currentWordIndex < lessonWords.length - 1) {
+                        showWord(currentWordIndex + 1);
+                    } else {
+                        // 已經是最後一個單字,保持在當前畫面
+                        // 第一次點擊:標記完成
+                        if (!completedLessons.has(currentLesson)) {
+                            completeLesson();
+                        } else {
+                            // 已經完成過,提示可以測驗或返回
+                            alert('✅ 已經是最後一個單字了!\n\n💡 可以點擊綠色的「開始小測驗」按鈕測試學習成果!');
+                        }
+                    }
+                });
+
+                CrossPlatformEvents.bindAll('[data-action="back-to-menu"]', (e) => {
+                    e.stopPropagation();
+                    backToMenu();
+                });
+            }, 10);
+        }
+
+        // ==========================================
+        // 完成課程
+        // ==========================================
+        
+        function completeLesson() {
+            if (currentLesson) {
+                completedLessons.add(currentLesson);
+                saveProgress();
+
+                // 不要跳回選單,讓學生選擇是否測驗
+                alert(`🎉 恭喜!您已完成 Lesson ${currentLesson}!\n\n可以點擊「🎯 開始小測驗」來測試學習成果,或點擊「📚 返回選單」回到課程列表。`);
+                // backToMenu(); // 註解掉自動返回
+            }
+        }
+
+        // ==========================================
+        // 返回選單
+        // ==========================================
+        
+        function backToMenu() {
+            const lessonsView = document.getElementById('lessonsView');
+            const flashcardContainer = document.getElementById('flashcardContainer');
+            const quizContainer = document.getElementById('quizContainer');
+            // 隱藏閃卡和測驗容器
+            flashcardContainer.classList.remove('active');
+            flashcardContainer.style.display = 'none';
+            if (quizContainer) {
+                quizContainer.classList.remove('active');
+                quizContainer.style.display = 'none';
+            }
+            // 顯示選單
+            lessonsView.style.display = 'block';
+
+            // 重置狀態
+            currentLesson = null;
+            currentWordIndex = 0;
+            lessonWords = [];
+
+            // 更新顯示
+            renderLessons();
+            updateStats();
+        }
+
+        // ==========================================
+        // 更新統計
+        // ==========================================
+        
+        function updateStats() {
+            const completed = completedLessons.size;
+            const total = 40;
+            const percentage = Math.round((completed / total) * 100);
+
+            document.getElementById('completedLessons').textContent = completed;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressFill').textContent = percentage + '%';
+        }
+
+        // ========================================
+        // é–‹å§‹æ¸¬é©—
+        // ========================================
+        
+        function startQuiz() {
+            // 檢查是否有選擇課程
+            if (!currentLesson) {
+                alert('❌ 錯誤:找不到當前課程!');
+                return;
+            }
+            // 檢查課程資料是否存在
+            if (!LESSONS_DATA[currentLesson]) {
+                alert('❌ 錯誤:找不到課程資料!');
+                return;
+            }
+            const words = LESSONS_DATA[currentLesson];
+            quizQuestions = [];
+            currentQuizIndex = 0;
+            quizScore = 0;
+            selectedAnswer = null;
+            const shuffledWords = [...words].sort(() => Math.random() - 0.5).slice(0, Math.min(5, words.length));
+            shuffledWords.forEach(word => {
+                const options = [word.chinese];
+                const otherWords = words.filter(w => w.chinese !== word.chinese);
+                
+                while (options.length < 4 && otherWords.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * otherWords.length);
+                    const option = otherWords[randomIndex].chinese;
+                    
+                    if (!options.includes(option)) {
+                        options.push(option);
+                    }
+                    
+                    otherWords.splice(randomIndex, 1);
+                }
+                
+                options.sort(() => Math.random() - 0.5);
+                
+                quizQuestions.push({
+                    word: word.english,
+                    correct: word.chinese,
+                    options: options
+                });
+            });
+            // 隱藏閃卡容器
+            const flashcardContainer = document.getElementById('flashcardContainer');
+            const quizContainer = document.getElementById('quizContainer');
+            flashcardContainer.classList.remove('active');
+            flashcardContainer.style.display = 'none';
+            // 顯示測驗容器
+            quizContainer.classList.add('active');
+            quizContainer.style.display = 'block';
+            showQuestion();
+        }
+
+
+        // ========================================
+        // 顯示測驗題目
+        // ========================================
+        
+        function showQuestion() {
+            const question = quizQuestions[currentQuizIndex];
+            document.getElementById('quizCounter').textContent = `題目 ${currentQuizIndex + 1} / ${quizQuestions.length}`;
+            document.getElementById('quizQuestion').textContent = `"${question.word}" 的中文意思是?`;
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+            document.getElementById('checkAnswerBtn').style.display = 'inline-block';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+            document.getElementById('quizResult').style.display = 'none';
+            selectedAnswer = null;
+        }
+
+        // ========================================
+        // 選擇答案
+        // ========================================
+        
+        function selectAnswer(index) {
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('.quiz-option')[index].classList.add('selected');
+            selectedAnswer = index;
+        }
+
+        // ========================================
+        // 檢查答案
+        // ========================================
+        
+        function checkAnswer() {
+            if (selectedAnswer === null) {
+                alert('請先選擇一個答案!');
+                return;
+            }
+            const question = quizQuestions[currentQuizIndex];
+            const options = document.querySelectorAll('.quiz-option');
+            const selectedOption = options[selectedAnswer];
+            const selectedText = selectedOption.textContent;
+            options.forEach((opt, index) => {
+                opt.onclick = null;
+                
+                if (opt.textContent === question.correct) {
+                    opt.classList.add('correct');
+                } else if (index === selectedAnswer) {
+                    opt.classList.add('wrong');
+                }
+            });
+            if (selectedText === question.correct) {
+                quizScore++;
+            }
+            document.getElementById('checkAnswerBtn').style.display = 'none';
+            if (currentQuizIndex < quizQuestions.length - 1) {
+                document.getElementById('nextQuestionBtn').style.display = 'inline-block';
+            } else {
+                showQuizResult();
+            }
+        }
+
+        // ========================================
+        // 下一題
+        // ========================================
+        
+        function nextQuestion() {
+            currentQuizIndex++;
+            showQuestion();
+        }
+
+        // ========================================
+        // 顯示測驗結果
+        // ========================================
+        
+        function showQuizResult() {
+            const totalQuestions = quizQuestions.length;
+            const percentage = Math.round((quizScore / totalQuestions) * 100);
+            let message = '';
+            let emoji = '';
+            if (percentage >= 80) {
+                message = '太棒了!你完全掌握了這些單字!';
+                emoji = '🎉';
+            } else if (percentage >= 60) {
+                message = '不錯喔!再複習一下會更好!';
+                emoji = '👍';
+            } else {
+                message = '加油!多複習幾次就會進步了!';
+                emoji = '💪';
+            }
+            // 儲存當前課程號,避免被清空
+            const lessonNumber = currentLesson;
+            document.getElementById('quizResult').innerHTML = `
+                <h3>${emoji} 測驗完成!</h3>
+                <p>你答對了 ${quizScore} / ${totalQuestions} 題</p>
+                <p>正確率: ${percentage}%</p>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="startQuiz()">再測驗一次</button>
+                <button class="btn btn-secondary" onclick="backToMenu()">返回課程</button>
+            `;
+            // 確保 currentLesson 不會被清空
+            currentLesson = lessonNumber;
+            document.getElementById('quizResult').style.display = 'block';
+            document.getElementById('checkAnswerBtn').style.display = 'none';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+        }
+
+        // ==========================================
+        // 進度儲存
+        // ==========================================
+        
+        function saveProgress() {
+            try {
+                const data = {
+                    completedLessons: Array.from(completedLessons),
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem('flashcard400_progress', JSON.stringify(data));
+            } catch (e) {
+                console.error('無法儲存進度:', e);
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem('flashcard400_progress');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    completedLessons = new Set(data.completedLessons || []);
+                }
+            } catch (e) {
+                console.error('無法載入進度:', e);
+            }
+        }
+
+        // ==========================================
+        // 頁面載入時執行
+        // ==========================================
+        
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📄 句子拼圖遊戲 | 400單字學習</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 標題 */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        /* 難度選擇 */
+        .difficulty-selector {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .difficulty-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .difficulty-btn {
+            padding: 1.5rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .difficulty-btn span {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .difficulty-btn small {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .difficulty-btn.easy {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .difficulty-btn.medium {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .difficulty-btn.hard {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .difficulty-btn.selected {
+            border-color: #1f2937;
+            box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.3);
+        }
+
+        /* 遊戲卡片 */
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+            display: none;
+        }
+
+        .game-card.active {
+            display: block;
+        }
+
+        /* 題目資訊 */
+        .question-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .question-number {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .score {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .difficulty-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .difficulty-badge.easy {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .difficulty-badge.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .difficulty-badge.hard {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* 提示區 */
+        .hint-area {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 3px dashed #f59e0b;
+        }
+
+        .hint-label {
+            font-size: 0.9rem;
+            color: #92400e;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        .chinese-sentence {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .english-hint {
+            font-size: 1rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        /* 答案區 */
+        .answer-area {
+            min-height: 100px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px dashed #f59e0b;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .answer-placeholder {
+            color: #d97706;
+            font-size: 1.1rem;
+            width: 100%;
+            text-align: center;
+            user-select: none;
+        }
+
+        /* 單字庫 */
+        .words-pool {
+            background: #e0e7ff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            min-height: 80px;
+            justify-content: center;
+        }
+
+        /* 單字卡片 */
+        .word-card {
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .word-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .word-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .word-card.in-answer {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        /* 按鈕區 */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            display: none;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        /* 回饋訊息 */
+        .feedback {
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        .feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .feedback.wrong {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        /* 完成畫面 */
+        .completion {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        .completion h2 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .completion .score-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #10b981;
+            margin: 1.5rem 0;
+        }
+
+        .completion .message {
+            font-size: 1.3rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-size: 1.3rem;
+            padding: 1rem 3rem;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        /* 動畫 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .chinese-sentence {
+                font-size: 1.5rem;
+            }
+
+            .word-card {
+                padding: 0.6rem 1.2rem;
+                font-size: 1.1rem;
+            }
+
+            button {
+                padding: 0.6rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            .completion h2 {
+                font-size: 2rem;
+            }
+
+            .completion .score-display {
+                font-size: 2.5rem;
+            }
+
+            .difficulty-btn {
+                padding: 1.2rem 1.5rem;
+            }
+
+            .difficulty-btn span {
+                font-size: 1.1rem;
+            }
+
+            .difficulty-btn small {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 標題 -->
+        <div class="header">
+            <h1>📄 句子拼圖遊戲</h1>
+            <p>拖曳或點擊單字,排列成正確的英文句子!</p>
+        </div>
+
+        <!-- 難度選擇 -->
+        <div class="difficulty-selector" id="difficultySelector">
+            <div class="difficulty-title">🎯 選擇難度等級</div>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn easy" onclick="selectDifficulty('easy')">
+                    <span>😊 簡單</span>
+                    <small>50-100單字</small>
+                </button>
+                <button class="difficulty-btn medium" onclick="selectDifficulty('medium')">
+                    <span>🤔 中等</span>
+                    <small>100-250單字</small>
+                </button>
+                <button class="difficulty-btn hard" onclick="selectDifficulty('hard')">
+                    <span>😤 困難</span>
+                    <small>250-400單字</small>
+                </button>
+            </div>
+        </div>
+
+        <!-- 遊戲卡片 -->
+        <div class="game-card" id="gameCard">
+            <!-- 題目資訊 -->
+            <div class="question-info">
+                <div class="question-number" id="questionNumber">第 1 題 / 共 10 題</div>
+                <div class="difficulty-badge" id="difficultyBadge">😊 簡單</div>
+                <div class="score" id="score">✅ 0 / 10</div>
+            </div>
+
+            <!-- 提示區 -->
+            <div class="hint-area">
+                <div class="hint-label">📌 請將下面的單字排列成這個中文的英文句子:</div>
+                <div class="chinese-sentence" id="chineseSentence">我喜歡狗。</div>
+                <div class="english-hint" id="englishHint">💡 提示: 主詞 + 動詞 + 受詞</div>
+            </div>
+
+            <!-- 答案區 -->
+            <div class="answer-area" id="answerArea" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="answer-placeholder" id="placeholder">📋 將單字拖曳到這裡排列句子</div>
+            </div>
+
+            <!-- 單字庫 -->
+            <div class="words-pool" id="wordsPool">
+                🎴 可用單字:
+            </div>
+
+            <!-- 按鈕 -->
+            <div class="button-group">
+                <button class="back-btn" onclick="backToDifficulty()" id="backBtn">
+                    ← 返回選擇
+                </button>
+                <button class="clear-btn" onclick="clearAnswer()" id="clearBtn">
+                    🔄 清空
+                </button>
+                <button class="check-btn" onclick="checkAnswer()" id="checkBtn">
+                    ✓ 檢查答案
+                </button>
+                <button class="next-btn" onclick="nextQuestion()" id="nextBtn">
+                    → 下一題
+                </button>
+            </div>
+
+            <!-- 回饋 -->
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- 完成畫面 -->
+        <div class="completion" id="completion">
+            <h2>🎉 恭喜完成!</h2>
+            <div class="score-display" id="finalScore">10 / 10</div>
+            <div class="message" id="completionMessage">太棒了!你全部答對!</div>
+            <div class="button-group">
+                <button class="restart-btn" onclick="playAgain()">
+                    🎮 再玩一次
+                </button>
+                <button class="back-btn" onclick="backToHome()">
+                    🏠 回首頁
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 語音系統 ====================
+        function speakSentence(text) {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ==================== 題目資料庫 ====================
+        const questionsByDifficulty = {
+            // 😊 簡單 (50-100單字) - 基礎句型
+            easy: [
+                {
+                    chinese: "我是學生。",
+                    english: "I am a student.",
+                    words: ["I", "am", "a", "student", "."],
+                    hint: "主詞 + be動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "他喜歡狗。",
+                    english: "He likes dogs.",
+                    words: ["He", "likes", "dogs", "."],
+                    hint: "主詞 + 動詞 + 名詞"
+                },
+                {
+                    chinese: "她是老師。",
+                    english: "She is a teacher.",
+                    words: ["She", "is", "a", "teacher", "."],
+                    hint: "主詞 + be動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "這是書。",
+                    english: "This is a book.",
+                    words: ["This", "is", "a", "book", "."],
+                    hint: "指示代名詞 + be動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "我有貓。",
+                    english: "I have a cat.",
+                    words: ["I", "have", "a", "cat", "."],
+                    hint: "主詞 + 動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "你好嗎?",
+                    english: "How are you?",
+                    words: ["How", "are", "you", "?"],
+                    hint: "疑問詞 + be動詞 + 主詞"
+                },
+                {
+                    chinese: "他是男孩。",
+                    english: "He is a boy.",
+                    words: ["He", "is", "a", "boy", "."],
+                    hint: "主詞 + be動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "她是女孩。",
+                    english: "She is a girl.",
+                    words: ["She", "is", "a", "girl", "."],
+                    hint: "主詞 + be動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "我看書。",
+                    english: "I read books.",
+                    words: ["I", "read", "books", "."],
+                    hint: "主詞 + 動詞 + 名詞"
+                },
+                {
+                    chinese: "他寫字。",
+                    english: "He writes.",
+                    words: ["He", "writes", "."],
+                    hint: "主詞 + 動詞"
+                },
+                {
+                    chinese: "她唱歌。",
+                    english: "She sings.",
+                    words: ["She", "sings", "."],
+                    hint: "主詞 + 動詞"
+                },
+                {
+                    chinese: "這是什麼?",
+                    english: "What is this?",
+                    words: ["What", "is", "this", "?"],
+                    hint: "疑問詞 + be動詞 + 指示代名詞"
+                },
+                {
+                    chinese: "我喜歡你。",
+                    english: "I like you.",
+                    words: ["I", "like", "you", "."],
+                    hint: "主詞 + 動詞 + 受詞"
+                },
+                {
+                    chinese: "他是好人。",
+                    english: "He is nice.",
+                    words: ["He", "is", "nice", "."],
+                    hint: "主詞 + be動詞 + 形容詞"
+                },
+                {
+                    chinese: "我們是朋友。",
+                    english: "We are friends.",
+                    words: ["We", "are", "friends", "."],
+                    hint: "主詞 + be動詞 + 名詞"
+                },
+                {
+                    chinese: "那是誰?",
+                    english: "Who is that?",
+                    words: ["Who", "is", "that", "?"],
+                    hint: "疑問詞 + be動詞 + 指示代名詞"
+                },
+                {
+                    chinese: "我有一個哥哥。",
+                    english: "I have a brother.",
+                    words: ["I", "have", "a", "brother", "."],
+                    hint: "主詞 + 動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "她有一個姊姊。",
+                    english: "She has a sister.",
+                    words: ["She", "has", "a", "sister", "."],
+                    hint: "主詞 + 動詞 + 冠詞 + 名詞"
+                },
+                {
+                    chinese: "我愛你。",
+                    english: "I love you.",
+                    words: ["I", "love", "you", "."],
+                    hint: "主詞 + 動詞 + 受詞"
+                },
+                {
+                    chinese: "他們是學生。",
+                    english: "They are students.",
+                    words: ["They", "are", "students", "."],
+                    hint: "主詞 + be動詞 + 名詞"
+                }
+            ],
+
+            // 🤔 中等 (100-250單字) - 進階句型
+            medium: [
+                {
+                    chinese: "我每天上學。",
+                    english: "I go to school every day.",
+                    words: ["I", "go", "to", "school", "every", "day", "."],
+                    hint: "主詞 + 動詞 + 介系詞 + 地點 + 頻率"
+                },
+                {
+                    chinese: "她正在看書。",
+                    english: "She is reading a book.",
+                    words: ["She", "is", "reading", "a", "book", "."],
+                    hint: "主詞 + be動詞 + 現在分詞 + 受詞"
+                },
+                {
+                    chinese: "他們在公園玩。",
+                    english: "They play in the park.",
+                    words: ["They", "play", "in", "the", "park", "."],
+                    hint: "主詞 + 動詞 + 介系詞 + 地點"
+                },
+                {
+                    chinese: "我會說英文。",
+                    english: "I can speak English.",
+                    words: ["I", "can", "speak", "English", "."],
+                    hint: "主詞 + 助動詞 + 動詞 + 受詞"
+                },
+                {
+                    chinese: "她喜歡唱歌。",
+                    english: "She likes singing.",
+                    words: ["She", "likes", "singing", "."],
+                    hint: "主詞 + 動詞 + 動名詞"
+                },
+                {
+                    chinese: "我昨天看電影。",
+                    english: "I watched a movie yesterday.",
+                    words: ["I", "watched", "a", "movie", "yesterday", "."],
+                    hint: "主詞 + 過去式動詞 + 受詞 + 時間"
+                },
+                {
+                    chinese: "他有兩個姊姊。",
+                    english: "He has two sisters.",
+                    words: ["He", "has", "two", "sisters", "."],
+                    hint: "主詞 + 動詞 + 數量 + 名詞"
+                },
+                {
+                    chinese: "我們在家吃晚餐。",
+                    english: "We eat dinner at home.",
+                    words: ["We", "eat", "dinner", "at", "home", "."],
+                    hint: "主詞 + 動詞 + 受詞 + 介系詞 + 地點"
+                },
+                {
+                    chinese: "她在教室裡。",
+                    english: "She is in the classroom.",
+                    words: ["She", "is", "in", "the", "classroom", "."],
+                    hint: "主詞 + be動詞 + 介系詞 + 地點"
+                },
+                {
+                    chinese: "你喜歡什麼運動?",
+                    english: "What sport do you like?",
+                    words: ["What", "sport", "do", "you", "like", "?"],
+                    hint: "疑問詞 + 名詞 + 助動詞 + 主詞 + 動詞"
+                },
+                {
+                    chinese: "我的媽媽很漂亮。",
+                    english: "My mother is beautiful.",
+                    words: ["My", "mother", "is", "beautiful", "."],
+                    hint: "所有格 + 名詞 + be動詞 + 形容詞"
+                },
+                {
+                    chinese: "他們正在吃午餐。",
+                    english: "They are eating lunch.",
+                    words: ["They", "are", "eating", "lunch", "."],
+                    hint: "主詞 + be動詞 + 現在分詞 + 受詞"
+                },
+                {
+                    chinese: "我想要一杯水。",
+                    english: "I want a glass of water.",
+                    words: ["I", "want", "a", "glass", "of", "water", "."],
+                    hint: "主詞 + 動詞 + 數量詞組"
+                },
+                {
+                    chinese: "她每天做作業。",
+                    english: "She does homework every day.",
+                    words: ["She", "does", "homework", "every", "day", "."],
+                    hint: "主詞 + 動詞 + 受詞 + 頻率"
+                },
+                {
+                    chinese: "我們喜歡踢足球。",
+                    english: "We like playing soccer.",
+                    words: ["We", "like", "playing", "soccer", "."],
+                    hint: "主詞 + 動詞 + 動名詞 + 受詞"
+                },
+                {
+                    chinese: "他在圖書館讀書。",
+                    english: "He studies in the library.",
+                    words: ["He", "studies", "in", "the", "library", "."],
+                    hint: "主詞 + 動詞 + 介系詞 + 地點"
+                },
+                {
+                    chinese: "今天天氣很好。",
+                    english: "The weather is nice today.",
+                    words: ["The", "weather", "is", "nice", "today", "."],
+                    hint: "冠詞 + 名詞 + be動詞 + 形容詞 + 時間"
+                },
+                {
+                    chinese: "她需要幫忙。",
+                    english: "She needs help.",
+                    words: ["She", "needs", "help", "."],
+                    hint: "主詞 + 動詞 + 受詞"
+                },
+                {
+                    chinese: "我們有很多朋友。",
+                    english: "We have many friends.",
+                    words: ["We", "have", "many", "friends", "."],
+                    hint: "主詞 + 動詞 + 數量 + 名詞"
+                },
+                {
+                    chinese: "他會游泳。",
+                    english: "He can swim.",
+                    words: ["He", "can", "swim", "."],
+                    hint: "主詞 + 助動詞 + 動詞"
+                }
+            ],
+
+            // 😤 困難 (250-400單字) - 複雜句型
+            hard: [
+                {
+                    chinese: "我昨天在公園遇見我的老師。",
+                    english: "I met my teacher in the park yesterday.",
+                    words: ["I", "met", "my", "teacher", "in", "the", "park", "yesterday", "."],
+                    hint: "主詞 + 過去式動詞 + 所有格 + 名詞 + 介系詞 + 地點 + 時間"
+                },
+                {
+                    chinese: "她正在等公車去學校。",
+                    english: "She is waiting for the bus to school.",
+                    words: ["She", "is", "waiting", "for", "the", "bus", "to", "school", "."],
+                    hint: "主詞 + be動詞 + 現在分詞 + 介系詞 + 受詞 + 目的"
+                },
+                {
+                    chinese: "我們明天要去博物館參觀。",
+                    english: "We will visit the museum tomorrow.",
+                    words: ["We", "will", "visit", "the", "museum", "tomorrow", "."],
+                    hint: "主詞 + 未來式助動詞 + 動詞 + 受詞 + 時間"
+                },
+                {
+                    chinese: "他比我高。",
+                    english: "He is taller than me.",
+                    words: ["He", "is", "taller", "than", "me", "."],
+                    hint: "主詞 + be動詞 + 比較級形容詞 + than + 受詞"
+                },
+                {
+                    chinese: "她想成為一名醫生。",
+                    english: "She wants to be a doctor.",
+                    words: ["She", "wants", "to", "be", "a", "doctor", "."],
+                    hint: "主詞 + 動詞 + to不定詞 + 名詞"
+                },
+                {
+                    chinese: "我們應該保護環境。",
+                    english: "We should protect the environment.",
+                    words: ["We", "should", "protect", "the", "environment", "."],
+                    hint: "主詞 + 助動詞 + 動詞 + 受詞"
+                },
+                {
+                    chinese: "這是我見過最美的地方。",
+                    english: "This is the most beautiful place I have seen.",
+                    words: ["This", "is", "the", "most", "beautiful", "place", "I", "have", "seen", "."],
+                    hint: "主詞 + be動詞 + 最高級 + 關係子句"
+                },
+                {
+                    chinese: "他正在幫媽媽做家事。",
+                    english: "He is helping his mother do housework.",
+                    words: ["He", "is", "helping", "his", "mother", "do", "housework", "."],
+                    hint: "主詞 + be動詞 + 現在分詞 + 受詞 + 原形動詞 + 受詞"
+                },
+                {
+                    chinese: "如果明天下雨,我們就待在家。",
+                    english: "If it rains tomorrow, we will stay home.",
+                    words: ["If", "it", "rains", "tomorrow", ",", "we", "will", "stay", "home", "."],
+                    hint: "If條件句 + 主要子句"
+                },
+                {
+                    chinese: "她不僅聰明而且努力。",
+                    english: "She is not only smart but also hard-working.",
+                    words: ["She", "is", "not", "only", "smart", "but", "also", "hard-working", "."],
+                    hint: "主詞 + be動詞 + not only...but also 句型"
+                },
+                {
+                    chinese: "我已經完成作業了。",
+                    english: "I have already finished my homework.",
+                    words: ["I", "have", "already", "finished", "my", "homework", "."],
+                    hint: "主詞 + 完成式助動詞 + 副詞 + 過去分詞 + 受詞"
+                },
+                {
+                    chinese: "他們正在討論下週的計畫。",
+                    english: "They are discussing the plan for next week.",
+                    words: ["They", "are", "discussing", "the", "plan", "for", "next", "week", "."],
+                    hint: "主詞 + be動詞 + 現在分詞 + 受詞 + 介系詞片語"
+                },
+                {
+                    chinese: "學習英文需要時間和耐心。",
+                    english: "Learning English takes time and patience.",
+                    words: ["Learning", "English", "takes", "time", "and", "patience", "."],
+                    hint: "動名詞主詞 + 動詞 + 受詞 + 對等連接詞"
+                },
+                {
+                    chinese: "越來越多人關心環保議題。",
+                    english: "More and more people care about environmental issues.",
+                    words: ["More", "and", "more", "people", "care", "about", "environmental", "issues", "."],
+                    hint: "比較級疊用 + 主詞 + 動詞 + 介系詞 + 受詞"
+                },
+                {
+                    chinese: "我希望你能幫我。",
+                    english: "I hope you can help me.",
+                    words: ["I", "hope", "you", "can", "help", "me", "."],
+                    hint: "主詞 + 動詞 + 名詞子句"
+                },
+                {
+                    chinese: "那個穿紅衣服的女孩是我妹妹。",
+                    english: "The girl in red is my sister.",
+                    words: ["The", "girl", "in", "red", "is", "my", "sister", "."],
+                    hint: "冠詞 + 名詞 + 介系詞片語 + be動詞 + 所有格 + 名詞"
+                },
+                {
+                    chinese: "他花了三小時完成這項工作。",
+                    english: "He spent three hours finishing this work.",
+                    words: ["He", "spent", "three", "hours", "finishing", "this", "work", "."],
+                    hint: "主詞 + 過去式動詞 + 時間 + 動名詞 + 受詞"
+                },
+                {
+                    chinese: "儘管很累,她還是繼續工作。",
+                    english: "Although tired, she continued working.",
+                    words: ["Although", "tired", ",", "she", "continued", "working", "."],
+                    hint: "連接詞 + 形容詞 + 主詞 + 動詞 + 動名詞"
+                },
+                {
+                    chinese: "這本書值得一讀。",
+                    english: "This book is worth reading.",
+                    words: ["This", "book", "is", "worth", "reading", "."],
+                    hint: "主詞 + be動詞 + worth + 動名詞"
+                },
+                {
+                    chinese: "我們應該互相尊重。",
+                    english: "We should respect each other.",
+                    words: ["We", "should", "respect", "each", "other", "."],
+                    hint: "主詞 + 助動詞 + 動詞 + 代名詞"
+                }
+            ]
+        };
+
+        // ==================== 遊戲狀態 ====================
+        let currentDifficulty = null;
+        let questions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let draggedElement = null;
+
+        // ==================== 選擇難度 ====================
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            
+            // 隨機抽10題
+            const allQuestions = questionsByDifficulty[difficulty];
+            const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+            questions = shuffled.slice(0, 10);
+            
+            // 重置遊戲狀態
+            currentQuestion = 0;
+            score = 0;
+            
+            // 更新難度顯示
+            const badge = document.getElementById('difficultyBadge');
+            badge.className = 'difficulty-badge ' + difficulty;
+            if (difficulty === 'easy') {
+                badge.textContent = '😊 簡單';
+            } else if (difficulty === 'medium') {
+                badge.textContent = '🤔 中等';
+            } else {
+                badge.textContent = '😤 困難';
+            }
+            
+            // 切換畫面
+            document.getElementById('difficultySelector').style.display = 'none';
+            document.getElementById('completion').style.display = 'none';
+            const gameCard = document.getElementById('gameCard');
+            gameCard.classList.add('active');
+            gameCard.style.display = 'block';
+            
+            // 載入第一題
+            loadQuestion();
+        }
+
+        // ==================== 返回難度選擇 ====================
+        function backToDifficulty() {
+            // 完整清除遊戲卡片狀態
+            const gameCard = document.getElementById('gameCard');
+            gameCard.classList.remove('active');
+            gameCard.style.display = 'none';
+            
+            // 顯示難度選擇
+            document.getElementById('difficultySelector').style.display = 'block';
+        }
+
+        // ==================== 載入題目 ====================
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showCompletion();
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            
+            // 更新題目資訊
+            document.getElementById('questionNumber').textContent = 
+                `第 ${currentQuestion + 1} 題 / 共 ${questions.length} 題`;
+            document.getElementById('chineseSentence').textContent = q.chinese;
+            document.getElementById('englishHint').textContent = `💡 提示: ${q.hint}`;
+            
+            // 清空答案區
+            const answerArea = document.getElementById('answerArea');
+            answerArea.innerHTML = '<div class="answer-placeholder" id="placeholder">📋 將單字拖曳到這裡排列句子</div>';
+            
+            // 隨機打亂單字順序
+            const shuffledWords = [...q.words].sort(() => Math.random() - 0.5);
+            
+            // 創建單字卡片
+            const wordsPool = document.getElementById('wordsPool');
+            wordsPool.innerHTML = '🎴 可用單字:';
+            shuffledWords.forEach(word => {
+                const card = createWordCard(word);
+                wordsPool.appendChild(card);
+            });
+            
+            // 重置按鈕狀態
+            document.getElementById('checkBtn').style.display = 'inline-flex';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+        }
+
+        // ==================== 創建單字卡片 ====================
+        function createWordCard(word) {
+            const card = document.createElement('div');
+            card.className = 'word-card';
+            card.textContent = word;
+            card.draggable = true;
+            
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+            card.addEventListener('touchstart', handleTouchStart);
+            card.addEventListener('touchmove', handleTouchMove);
+            card.addEventListener('touchend', handleTouchEnd);
+            card.addEventListener('click', () => addToAnswer(card));
+            
+            return card;
+        }
+
+        // ==================== 拖曳處理 ====================
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            if (draggedElement) {
+                addToAnswer(draggedElement);
+            }
+        }
+
+        // ==================== 觸控處理 ====================
+        let touchedElement = null;
+
+        function handleTouchStart(e) {
+            touchedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+        }
+
+        function handleTouchEnd(e) {
+            e.target.classList.remove('dragging');
+            if (touchedElement) {
+                addToAnswer(touchedElement);
+            }
+        }
+
+        // ==================== 加入答案區 ====================
+        function addToAnswer(element) {
+            const answerArea = document.getElementById('answerArea');
+            const placeholder = document.getElementById('placeholder');
+            
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            if (element.classList.contains('in-answer')) {
+                element.classList.remove('in-answer');
+                document.getElementById('wordsPool').appendChild(element);
+            } else {
+                element.classList.add('in-answer');
+                answerArea.appendChild(element);
+            }
+            
+            if (answerArea.children.length === 0) {
+                answerArea.innerHTML = '<div class="answer-placeholder" id="placeholder">📋 將單字拖曳到這裡排列句子</div>';
+            }
+        }
+
+        // ==================== 清空答案 ====================
+        function clearAnswer() {
+            const answerArea = document.getElementById('answerArea');
+            const wordsPool = document.getElementById('wordsPool');
+            const cards = answerArea.querySelectorAll('.word-card');
+            
+            cards.forEach(card => {
+                card.classList.remove('in-answer');
+                wordsPool.appendChild(card);
+            });
+            
+            answerArea.innerHTML = '<div class="answer-placeholder" id="placeholder">📋 將單字拖曳到這裡排列句子</div>';
+            document.getElementById('feedback').style.display = 'none';
+        }
+
+        // ==================== 檢查答案 ====================
+        function checkAnswer() {
+            const answerArea = document.getElementById('answerArea');
+            const userAnswer = Array.from(answerArea.querySelectorAll('.word-card'))
+                .map(card => card.textContent)
+                .join(' ')
+                .replace(/\s+([.,!?])/g, '$1')
+                .trim();
+            
+            const correctAnswer = questions[currentQuestion].english;
+            const feedback = document.getElementById('feedback');
+            
+            if (userAnswer === correctAnswer) {
+                score++;
+                feedback.className = 'feedback correct';
+                feedback.textContent = '✅ 正確!太棒了!';
+                feedback.style.display = 'block';
+                
+                document.getElementById('score').textContent = `✅ ${score} / ${questions.length}`;
+                document.getElementById('checkBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-flex';
+                
+                setTimeout(() => {
+                    speakSentence(correctAnswer);
+                }, 500);
+                
+            } else {
+                feedback.className = 'feedback wrong';
+                feedback.textContent = `❌ 不對喔!正確答案: ${correctAnswer}`;
+                feedback.style.display = 'block';
+            }
+        }
+
+        // ==================== 下一題 ====================
+        function nextQuestion() {
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        // ==================== 顯示完成畫面 ====================
+        function showCompletion() {
+            const percentage = Math.round((score / questions.length) * 100);
+            let message = '';
+            
+            if (percentage === 100) {
+                message = '🎉 太棒了!你全部答對!';
+            } else if (percentage >= 80) {
+                message = '👍 很棒!繼續加油!';
+            } else if (percentage >= 60) {
+                message = '💪 不錯喔!再多練習會更好!';
+            } else {
+                message = '📚 再接再厲!多練習就會進步!';
+            }
+            
+            document.getElementById('finalScore').textContent = `${score} / ${questions.length}`;
+            document.getElementById('completionMessage').textContent = message;
+            
+            document.getElementById('gameCard').style.display = 'none';
+            document.getElementById('completion').style.display = 'block';
+        }
+
+        // ==================== 重新開始 ====================
+        function restartGame() {
+            document.getElementById('gameCard').style.display = 'none';
+            document.getElementById('completion').style.display = 'none';
+            document.getElementById('difficultySelector').style.display = 'block';
+        }
+
+        // ==================== 再玩一次 (相同難度,全新題目) ====================
+        function playAgain() {
+            // 重新抽10題
+            const allQuestions = questionsByDifficulty[currentDifficulty];
+            const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+            questions = shuffled.slice(0, 10);
+            
+            // 重置遊戲狀態
+            currentQuestion = 0;
+            score = 0;
+            
+            // 隱藏完成畫面
+            document.getElementById('completion').style.display = 'none';
+            
+            // 顯示遊戲卡片
+            const gameCard = document.getElementById('gameCard');
+            gameCard.classList.add('active');
+            gameCard.style.display = 'block';
+            
+            // 載入第一題
+            loadQuestion();
+        }
+
+        // ==================== 回首頁 (重新選擇難度) ====================
+        function backToHome() {
+            // 隱藏遊戲卡片
+            document.getElementById('gameCard').classList.remove('active');
+            document.getElementById('gameCard').style.display = 'none';
+            
+            // 隱藏完成畫面
+            document.getElementById('completion').style.display = 'none';
+            
+            // 顯示難度選擇
+            document.getElementById('difficultySelector').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

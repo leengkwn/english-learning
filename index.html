@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 400單字學習中心 | 小學英語完整系統</title>
+    <style>
+        /* ==================== CSS變數系統 ==================== */
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --secondary: #EC4899;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --bg-main: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== 全局樣式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ==================== 頁首 ==================== */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-50px, -50px) rotate(180deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            animation: slideDown 0.6s ease-out 0.2s backwards;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== 統計儀表板 ==================== */
+        .stats-dashboard {
+            max-width: 1200px;
+            margin: -25px auto 2rem;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            transition: var(--transition);
+            animation: scaleIn 0.5s ease-out backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ==================== 主容器 ==================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* ==================== 分類標籤 ==================== */
+        .category-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary);
+            background: var(--bg-card);
+            color: var(--primary);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ==================== 工具卡片網格 ==================== */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .tool-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tool-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .tool-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .tool-desc {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .tool-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-main);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .tool-link {
+            display: inline-block;
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .tool-link:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        /* ==================== 學習路徑推薦 ==================== */
+        .learning-path {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .path-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .path-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .path-step {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .path-step:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            background: white;
+            color: #667eea;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* ==================== 分類標題 ==================== */
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .category-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .category-count {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* ==================== Footer ==================== */
+        .footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ==================== 響應式設計 ==================== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header .subtitle {
+                font-size: 1rem;
+            }
+
+            .stats-dashboard {
+                grid-template-columns: repeat(2, 1fr);
+                margin-top: -15px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .path-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .category-tabs {
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ==================== 動畫效果 ==================== */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== 載入動畫 ==================== */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頁首 -->
+    <div class="header">
+        <div class="header-content">
+            <h1>🎯 400單字學習中心</h1>
+            <p class="subtitle">小學1-6年級英語完整學習系統 | 108課綱適用</p>
+        </div>
+    </div>
+
+    <!-- 統計儀表板 -->
+    <div class="stats-dashboard">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-number">400</div>
+            <div class="stat-label">個單字</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎮</div>
+            <div class="stat-number">4</div>
+            <div class="stat-label">個遊戲</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-number">10</div>
+            <div class="stat-label">個單元</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-number" id="progressPercent">0%</div>
+            <div class="stat-label">完成進度</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 學習路徑推薦 -->
+        <div class="learning-path">
+            <h2 class="path-title">🚀 建議學習路徑</h2>
+            <div class="path-steps">
+                <div class="path-step">
+                    <div class="step-number">1</div>
+                    <div class="step-title">📚 閃卡記憶</div>
+                    <div class="step-desc">先用閃卡認識單字,看圖記憶</div>
+                </div>
+                <div class="path-step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">🎯 射擊遊戲</div>
+                    <div class="step-desc">訓練聽力,聽音選字</div>
+                </div>
+                <div class="path-step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">🧩 拼圖王</div>
+                    <div class="step-desc">練習拼字,看中拼英</div>
+                </div>
+                <div class="path-step">
+                    <div class="step-number">4</div>
+                    <div class="step-title">🎴 配對挑戰</div>
+                    <div class="step-desc">記憶鞏固,英中配對</div>
+                </div>
+                <div class="path-step">
+                    <div class="step-number">5</div>
+                    <div class="step-title">📄 句子拼圖</div>
+                    <div class="step-desc">實戰應用,句子重組</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分類標籤 -->
+        <div class="category-tabs">
+            <button class="tab-btn active" onclick="filterTools('all')">
+                <span>🌟</span> 全部工具
+            </button>
+            <button class="tab-btn" onclick="filterTools('learn')">
+                <span>📚</span> 學習工具
+            </button>
+            <button class="tab-btn" onclick="filterTools('game')">
+                <span>🎮</span> 遊戲練習
+            </button>
+        </div>
+
+        <!-- 學習工具區 -->
+        <div class="category-section" data-category="learn">
+            <div class="category-header">
+                <h2>📚 學習工具</h2>
+                <span class="category-count">1 項</span>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-card" data-type="learn">
+                    <span class="tool-icon">📖</span>
+                    <h3 class="tool-title">400單字閃卡系統</h3>
+                    <p class="tool-desc">完整的400單字學習卡片,包含圖片、音標、例句和語音朗讀功能</p>
+                    <div class="tool-meta">
+                        <span class="meta-tag">📊 10單元</span>
+                        <span class="meta-tag">🔊 語音朗讀</span>
+                        <span class="meta-tag">🎯 適合全年級</span>
+                    </div>
+                    <a href="單字閃卡系統_20251207_v2.0.html" target="_blank" class="tool-link">開始學習 →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遊戲練習區 -->
+        <div class="category-section" data-category="game">
+            <div class="category-header">
+                <h2>🎮 遊戲練習</h2>
+                <span class="category-count">4 項</span>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-card" data-type="game">
+                    <span class="tool-icon">🎯</span>
+                    <h3 class="tool-title">400單字射擊遊戲</h3>
+                    <p class="tool-desc">聽力訓練遊戲,聽英文選中文,打氣球學單字</p>
+                    <div class="tool-meta">
+                        <span class="meta-tag">🎧 聽力訓練</span>
+                        <span class="meta-tag">⏱️ 60秒挑戰</span>
+                        <span class="meta-tag">🎯 適合小一~小三</span>
+                    </div>
+                    <a href="400單字射擊遊戲.html" target="_blank" class="tool-link">開始遊戲 →</a>
+                </div>
+
+                <div class="tool-card" data-type="game">
+                    <span class="tool-icon">🧩</span>
+                    <h3 class="tool-title">400單字拼圖王</h3>
+                    <p class="tool-desc">拼字訓練遊戲,看中文拼英文,點擊字母組單字</p>
+                    <div class="tool-meta">
+                        <span class="meta-tag">✍️ 拼字訓練</span>
+                        <span class="meta-tag">💡 智能提示</span>
+                        <span class="meta-tag">🎯 適合小三~小六</span>
+                    </div>
+                    <a href="單字拼字遊戲_20251207_v2.3.html" target="_blank" class="tool-link">開始遊戲 →</a>
+                </div>
+
+                <div class="tool-card" data-type="game">
+                    <span class="tool-icon">🎴</span>
+                    <h3 class="tool-title">400單字配對挑戰</h3>
+                    <p class="tool-desc">記憶力遊戲,翻牌配對英中單字</p>
+                    <div class="tool-meta">
+                        <span class="meta-tag">🧠 記憶訓練</span>
+                        <span class="meta-tag">⏱️ 計時挑戰</span>
+                        <span class="meta-tag">🎯 適合全年級</span>
+                    </div>
+                    <a href="單字配對遊戲_20251207_v1.0.html" target="_blank" class="tool-link">開始遊戲 →</a>
+                </div>
+
+                <div class="tool-card" data-type="game">
+                    <span class="tool-icon">📄</span>
+                    <h3 class="tool-title">400單字句子拼圖 v3.0</h3>
+                    <p class="tool-desc">三級難度句子重組,拖曳單字排列成正確句子</p>
+                    <div class="tool-meta">
+                        <span class="meta-tag">😊 簡單 (50-100字)</span>
+                        <span class="meta-tag">🤔 中等 (100-250字)</span>
+                        <span class="meta-tag">😤 困難 (250-400字)</span>
+                    </div>
+                    <a href="句子拼圖遊戲_20251207_v3.0.html" target="_blank" class="tool-link">開始遊戲 →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <p style="margin-bottom: 0.5rem;">
+                <strong>🎓 400單字學習中心</strong>
+            </p>
+            <p style="font-size: 0.9rem; opacity: 0.8;">
+                博幼社會福利基金會 | 專為小學生設計的英語學習系統
+            </p>
+            <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 1rem;">
+                版本 v1.4 | 2025-12-07 | 符合108課綱 | 新增句子拼圖v3.0三級難度
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 分類篩選功能 ====================
+        function filterTools(category) {
+            const allCards = document.querySelectorAll('.tool-card');
+            const allTabs = document.querySelectorAll('.tab-btn');
+            const allSections = document.querySelectorAll('.category-section');
+
+            // 更新標籤狀態
+            allTabs.forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.tab-btn').classList.add('active');
+
+            // 顯示/隱藏卡片
+            if (category === 'all') {
+                allSections.forEach(section => section.style.display = 'block');
+                allCards.forEach(card => {
+                    card.style.display = 'block';
+                    card.classList.add('fade-in');
+                });
+            } else {
+                allSections.forEach(section => {
+                    if (section.dataset.category === category) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+                
+                allCards.forEach(card => {
+                    if (card.dataset.type === category) {
+                        card.style.display = 'block';
+                        card.classList.add('fade-in');
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // ==================== 進度計算 ====================
+        function calculateProgress() {
+            // 這裡可以從localStorage讀取實際進度
+            // 暫時使用模擬數據
+            const totalUnits = 10;
+            const completedUnits = parseInt(localStorage.getItem('completedUnits') || '0');
+            const progress = Math.round((completedUnits / totalUnits) * 100);
+            
+            document.getElementById('progressPercent').textContent = progress + '%';
+        }
+
+        // ==================== 頁面載入 ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            calculateProgress();
+            
+            // 添加卡片進入動畫
+            const cards = document.querySelectorAll('.tool-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        });
+
+        // ==================== 工具追蹤 ====================
+        function trackToolUsage(toolName) {
+            const usage = JSON.parse(localStorage.getItem('toolUsage') || '{}');
+            usage[toolName] = (usage[toolName] || 0) + 1;
+            localStorage.setItem('toolUsage', JSON.stringify(usage));
+        }
+
+        // 為所有工具連結添加追蹤
+        document.querySelectorAll('.tool-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const toolName = this.closest('.tool-card').querySelector('.tool-title').textContent;
+                trackToolUsage(toolName);
+            });
+        });
+    </script>
+</body>
+</html>
