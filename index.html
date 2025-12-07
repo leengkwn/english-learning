@@ -2,7 +2,10 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>🎯 400單字學習中心 | 小學英語完整系統</title>
     <style>
         /* ==================== CSS變數系統 ==================== */
@@ -28,6 +31,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* 防止iPhone文字選取和長按菜單 */
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            /* iPhone平滑滾動 */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -36,6 +48,14 @@
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            /* iPhone安全區域支持 */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            /* 防止橫向滾動 */
+            max-width: 100vw;
+            position: relative;
         }
 
         /* ==================== 頁首 ==================== */
@@ -403,35 +423,166 @@
         }
 
         /* ==================== 響應式設計 ==================== */
+        /* ==================== 手機版優化 (iPhone優先) ==================== */
         @media (max-width: 768px) {
+            /* 頁首優化 */
+            .header {
+                padding: 1.5rem 1rem;
+            }
+
             .header h1 {
-                font-size: 1.8rem;
+                font-size: 1.75rem;
+                line-height: 1.3;
             }
 
             .header .subtitle {
-                font-size: 1rem;
+                font-size: 0.95rem;
+                line-height: 1.4;
             }
 
+            /* 統計儀表板 - 2x2網格,增加間距 */
             .stats-dashboard {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
                 margin-top: -15px;
+                padding: 0 0.5rem;
             }
 
+            .stat-card {
+                padding: 1.25rem 1rem;
+            }
+
+            .stat-icon {
+                font-size: 2rem;
+            }
+
+            .stat-number {
+                font-size: 1.75rem;
+            }
+
+            .stat-label {
+                font-size: 0.85rem;
+            }
+
+            /* 工具網格 - 單列,增加間距防止誤觸 */
             .tools-grid {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0 0.5rem;
+            }
+
+            .tool-card {
+                padding: 1.75rem 1.5rem;
+                /* 增加觸控區域 */
+                min-height: 120px;
+            }
+
+            .tool-icon {
+                font-size: 2.5rem;
+            }
+
+            .tool-title {
+                font-size: 1.3rem;
+            }
+
+            .tool-desc {
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+
+            /* 按鈕最小觸控尺寸 44x44px (Apple HIG) */
+            .tool-link {
+                padding: 0.875rem 1rem;
+                min-height: 44px;
+                font-size: 1rem;
+                border-radius: 10px;
+                /* 觸控反饋 */
+                -webkit-tap-highlight-color: rgba(79, 70, 229, 0.3);
+            }
+
+            /* 分類標籤優化 */
+            .category-tabs {
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                padding: 0 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.75rem 1.25rem;
+                min-height: 44px;
+                font-size: 0.95rem;
+                /* 觸控反饋 */
+                -webkit-tap-highlight-color: rgba(79, 70, 229, 0.3);
+            }
+
+            /* 學習路徑優化 */
+            .learning-path {
+                padding: 2rem 1.25rem;
+                margin: 0 0.5rem 2rem;
+            }
+
+            .path-title {
+                font-size: 1.5rem;
+                line-height: 1.3;
             }
 
             .path-steps {
                 grid-template-columns: 1fr;
+                gap: 1.25rem;
             }
 
-            .category-tabs {
-                gap: 0.5rem;
+            .path-step {
+                padding: 1.5rem 1.25rem;
+                min-height: 120px;
+                /* 觸控反饋 */
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
             }
 
-            .tab-btn {
-                padding: 0.5rem 1rem;
+            .step-title {
+                font-size: 1.15rem;
+            }
+
+            .step-desc {
                 font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            /* 容器內距調整 */
+            .container {
+                padding: 1.5rem 0.75rem;
+            }
+
+            /* 分類標題優化 */
+            .category-header {
+                padding: 0 0.5rem 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .category-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* iPhone SE/小屏手機額外優化 */
+        @media (max-width: 375px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header .subtitle {
+                font-size: 0.875rem;
+            }
+
+            .tool-title {
+                font-size: 1.2rem;
+            }
+
+            .tool-desc {
+                font-size: 0.9rem;
+            }
+
+            .path-title {
+                font-size: 1.35rem;
             }
         }
 

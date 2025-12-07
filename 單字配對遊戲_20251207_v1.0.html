@@ -2,13 +2,25 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>400單字配對大挑戰</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* iPhone觸控優化 */
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            /* iPhone平滑滾動 */
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
 
         body {
@@ -21,6 +33,10 @@
             align-items: center;
             padding: 10px;
             overflow: hidden;
+            /* iPhone安全區域支持 */
+            padding-top: max(env(safe-area-inset-top), 10px);
+            padding-bottom: max(env(safe-area-inset-bottom), 10px);
+            max-width: 100vw;
         }
 
         .container {
